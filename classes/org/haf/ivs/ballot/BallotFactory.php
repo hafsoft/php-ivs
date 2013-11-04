@@ -89,7 +89,7 @@ class BallotFactory implements IBallotFactory
      */
     private function  &getCachedSigner($signerId) {
         if (! isset($this->signers[$signerId])) {
-            $this->signers[$signerId] = Ivs::$instance->getVoteBothManager()->getById($signerId);
+            $this->signers[$signerId] = Ivs::app()->getVoteBothManager()->getById($signerId);
         }
         return $this->signers[$signerId];
     }
