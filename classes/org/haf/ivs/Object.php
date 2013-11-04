@@ -83,7 +83,7 @@ abstract class Object implements IObject
     public function setProperties($properties)
     {
         foreach ($properties as $key => &$val) {
-            $this->$key = $val;
+            $this->$key =& $val;
         }
     }
 
@@ -123,7 +123,8 @@ abstract class Object implements IObject
     {
         /** @var Object $object */
         $object = self::newInstance(str_replace('.', '\\', $array['__class__']), $array['__construct']);
-        $object->setProperties($array['__prop']);
+        if ($array['__prop'])
+            $object->setProperties($array['__prop']);
         return $object;
     }
 

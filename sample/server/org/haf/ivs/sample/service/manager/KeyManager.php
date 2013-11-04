@@ -18,10 +18,10 @@ use org\haf\ivs\key\RsaPrivateKey;
 use org\haf\ivs\key\RsaPublicKey;
 
 class KeyManager extends AbstractManager implements IKeyManager {
-    private $keyDir;
+    private $keyDir = '/media/data/ivs/key';
 
     private function getKeyFileName($keyType, $objectType, $objectId) {
-        return "{$this->keyDir}/{$objectType}/{$objectId}-{$keyType}.key";
+        return "{$this->keyDir}/{$objectType}/{$objectId}-{$keyType}.pem";
     }
 
 
@@ -31,7 +31,7 @@ class KeyManager extends AbstractManager implements IKeyManager {
      */
     public function getSignerPrivateKey($signerId)
     {
-        return new RsaPrivateKey($this->getKeyFileName('private', 'signer', $signerId));
+        return new RsaPrivateKey($this->getKeyFileName('privkey', 'signer', $signerId));
     }
 
     /**
@@ -40,7 +40,7 @@ class KeyManager extends AbstractManager implements IKeyManager {
      */
     public function getSignerPublicKey($signerId)
     {
-        return new RsaPublicKey($this->getKeyFileName('public', 'signer', $signerId));
+        return new RsaPublicKey($this->getKeyFileName('pubkey', 'signer', $signerId));
     }
 
     /**
@@ -49,7 +49,7 @@ class KeyManager extends AbstractManager implements IKeyManager {
      */
     public function getElectionPrivateKey($electionId)
     {
-        return new RsaPrivateKey($this->getKeyFileName('private', 'election', $electionId));
+        return new RsaPrivateKey($this->getKeyFileName('privkey', 'election', $electionId));
     }
 
     /**
@@ -58,6 +58,6 @@ class KeyManager extends AbstractManager implements IKeyManager {
      */
     public function getElectionPublicKey($electionId)
     {
-        return new RsaPublicKey($this->getKeyFileName('public', 'election', $electionId));
+        return new RsaPublicKey($this->getKeyFileName('pubkey', 'election', $electionId));
     }
 }

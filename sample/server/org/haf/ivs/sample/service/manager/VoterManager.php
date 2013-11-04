@@ -12,6 +12,7 @@ namespace org\haf\ivs\sample\service\manager;
 
 use org\haf\ivs\AbstractManager;
 use org\haf\ivs\Ivs;
+use org\haf\ivs\tool\Security;
 use org\haf\ivs\voter\IVoter;
 use org\haf\ivs\voter\IVoterManager;
 use org\haf\ivs\voter\Voter;
@@ -48,20 +49,11 @@ class VoterManager extends AbstractManager implements IVoterManager {
 
 
     /**
-     * @param Ivs $parent
-     * @param null|mixed $config
-     */
-    public function __construct($parent, $config = null)
-    {
-        // TODO: Implement __construct() method.
-    }
-
-    /**
      * @return string[]
      */
     public function getAllowedMethods()
     {
-        return array ('authenticate', 'getFromSessionId');
+        return array ('authenticate');
     }
 
     /**
@@ -86,12 +78,49 @@ class VoterManager extends AbstractManager implements IVoterManager {
                 throw new VoterException(VoterException::METHOD_NOT_SUPPORTED);
         }
         $params = self::$voters[$id];
+        $voter = $this->getById($id);
+        $voter->setSessionId($this->createSessionForId($id));
+        return $voter;
+    }
+
+    /**
+     * @param string $id
+     * @return \org\haf\ivs\IObject|Voter
+     */
+    private function &getById($id) {
+        $cache = $this->ivs->getCache();
+        if (null === ($voter = $cache->fetchObject('voter', $id))) {
+            $voter = $this->getByIdImpl($id);
+            $cache->putObject('voter', $id, $voter);
+        }
+        return $voter;
+    }
+
+    /**
+     * @param string $id
+     * @return Voter
+     */
+    private function getByIdImpl($id) {
+        $params = self::$voters[$id];
         $voter = new Voter();
         $voter->setName($params['name']);
-        $voter->setSessionId($id);
         $voter->setElectionIds($params['elections_id']);
         $voter->setInfo($params['info']);
         return $voter;
+    }
+
+    /**
+     * @param string $id
+     * @return string
+     */
+    private function createSessionForId($id) {
+        $salt = Security::generateSalt(5);
+        $token = Security::generateSalt(5);
+        $sid = "$id:$salt:$token";
+        $cacheName = "ivs:session:$id:$salt";
+        $hash = md5($sid);
+        $this->ivs->getCache()->set($cacheName, $hash);
+        return $sid;
     }
 
     /**
@@ -135,9 +164,17 @@ class VoterManager extends AbstractManager implements IVoterManager {
      * @return IVoter Description
      * @throws VoterException
      */
-    public function getFromSessionId($sessionId)
+    public function &getFromSessionId($sessionId)
     {
-        // TODO: Implement getFromSessionId() method.
+        list($id, $salt, $token) = explode(':', $sessionId);
+        $cacheName = "ivs:session:$id:$salt";
+        $hash = $this->ivs->getCache()->get($cacheName);
+        if ($hash === md5($sessionId)) {
+            $voter = $this->getById($id);
+            $voter->setSessionId($sessionId);
+            return $voter;
+        }
+        throw new VoterException(VoterException::ACCESS_DENIED);
     }
 
     /**
@@ -148,6 +185,8 @@ class VoterManager extends AbstractManager implements IVoterManager {
      */
     public function logout($sessionId)
     {
-        // TODO: Implement logout() method.
+        list($id, $salt, $token) = explode(':', $sessionId);
+        $cacheName = "ivs:session:$id:$salt";
+        $this->ivs->getCache()->remove($cacheName);
     }
 }

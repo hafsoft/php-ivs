@@ -26,16 +26,20 @@ class IvsServiceRequest implements IObject
     /** @var mixed */
     private $arguments;
 
+    private $sessionId;
+
     /**
      * @param string $managerName
      * @param string $methodName
      * @param mixed $arguments
+     * @param string $sessionId
      */
-    function __construct($managerName = null, $methodName = null, $arguments = null)
+    function __construct($managerName = null, $methodName = null, $arguments = null, $sessionId = null)
     {
         $this->methodName  = $methodName;
         $this->managerName = $managerName;
         $this->arguments   = $arguments;
+        $this->sessionId = $sessionId;
         $this->id          = rand(0, 99999);
     }
 
@@ -108,6 +112,15 @@ class IvsServiceRequest implements IObject
         return $this->methodName;
     }
 
+    /**
+     * @return null|string
+     */
+    public function getSessionId()
+    {
+        return $this->sessionId;
+    }
+
+
 
     /**
      * @return mixed
@@ -119,7 +132,8 @@ class IvsServiceRequest implements IObject
             'id'      => $this->id,
             'manager' => $this->managerName,
             'method'  => $this->methodName,
-            'args'    => $this->arguments
+            'args'    => $this->arguments,
+            'sid'     => $this->sessionId,
         );
     }
 
@@ -132,7 +146,8 @@ class IvsServiceRequest implements IObject
         return new IvsServiceRequest(
             isset($array['manager']) ? $array['manager'] : null,
             isset($array['method']) ? $array['method'] : null,
-            isset($array['args']) ? $array['args'] : null
+            isset($array['args']) ? $array['args'] : null,
+            isset($array['sid']) ? $array['sid'] : null
         );
     }
 }

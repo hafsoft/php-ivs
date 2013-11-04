@@ -21,7 +21,7 @@ interface IBallot
     public function getCandidate();
 
     /**
-     * @return IVoteBooth
+     * @return IBallotSigner
      */
     public function getSigner();
 
@@ -29,9 +29,4 @@ interface IBallot
      * @return boolean
      */
     public function isVerified();
-
-    /**
-     * @return IPackedBallot
-     */
-    public function pack();
 }

@@ -28,11 +28,11 @@ interface IVoterManager extends IManager
     public function getFromSessionId($sessionId);
 
     /**
-     * @param string $sessionId Description
+     * @param IVoter $voter Description
      *
      * @return boolean
      * @throws VoterException
      */
-    public function logout($sessionId);
+    public function logout($voter);
 
 }

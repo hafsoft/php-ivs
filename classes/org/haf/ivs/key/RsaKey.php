@@ -19,13 +19,20 @@ abstract class RsaKey extends Object implements Ikey
     public function __construct($filename = null)
     {
         if ($filename) {
-            $this->keyString = file_get_contents($filename);
+            if (substr_compare($filename, '-----BEGIN ', 0, 11) === 0) {
+                $this->keyString = $filename;
+            } else {
+                $this->keyString = file_get_contents($filename);
+            }
+
         }
     }
 
 
-    protected function getPropertiesName()
+
+
+    protected function getConstructParams()
     {
-        return array('keyString');
+        return array('keyString' => $this->keyString);
     }
 }

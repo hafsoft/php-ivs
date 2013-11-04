@@ -13,11 +13,11 @@ interface IBallotIterator extends \Iterator
 {
 
     /**
-     * @return IBallot
+     * @return IPackedBallot
      */
     public function current();
 
-    /** @return IBallot */
+    /** @return IPackedBallot */
     public function next();
 
 }

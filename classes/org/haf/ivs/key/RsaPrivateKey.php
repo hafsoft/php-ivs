@@ -80,7 +80,7 @@ class RsaPrivateKey extends RsaKey implements IPrivateKey
         $signature = null;
         $success   = openssl_sign($data, $signature, $this->key);
         if ($success) {
-            return $signature;
+            return base64_encode($signature);
         } else {
             throw new KeyException("Sign Error", self::SIGN_ERROR);
         }
@@ -98,7 +98,7 @@ class RsaPrivateKey extends RsaKey implements IPrivateKey
 
         $encryptedData = null;
         if (openssl_private_encrypt($data, $encryptedData, $this->key)) {
-            return $encryptedData;
+            return base64_encode($encryptedData);
         }
 
         throw new KeyException();
@@ -115,7 +115,7 @@ class RsaPrivateKey extends RsaKey implements IPrivateKey
             throw new KeyException('Key Locked', self::KEY_LOCKED);
 
         $decryptedData = null;
-        if (openssl_public_decrypt($data, $decryptedData, $this->key)) {
+        if (openssl_private_decrypt(base64_decode($data), $decryptedData, $this->key)) {
             return $decryptedData;
         }
 

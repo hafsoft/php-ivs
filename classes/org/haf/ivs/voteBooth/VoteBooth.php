@@ -10,19 +10,21 @@
 namespace org\haf\ivs\voteBooth;
 
 use org\haf\ivs\ballot\Ballot;
+use org\haf\ivs\ballot\IBallotSigner;
+use org\haf\ivs\Ivs;
 use org\haf\ivs\Object;
 
 class VoteBooth extends Object implements IVoteBooth
 {
 
     /** @var  string */
-    private $id;
+    protected $id;
 
     /** @var  \org\haf\ivs\key\IPrivateKey */
-    private $privateKey;
+    protected $privateKey = null;
 
     /** @var  \org\haf\ivs\key\IPublicKey */
-    private $publicKey;
+    protected $publicKey = null;
 
     /**
      * @param string $id
@@ -51,8 +53,11 @@ class VoteBooth extends Object implements IVoteBooth
     /**
      * @return \org\haf\ivs\key\IPrivateKey
      */
-    public function getPrivateKey()
+    public function &getPrivateKey()
     {
+        if ($this->privateKey == null) {
+            $this->privateKey = Ivs::$instance->getKeyManager()->getSignerPrivateKey($this->getId());
+        }
         return $this->privateKey;
     }
 
@@ -67,21 +72,11 @@ class VoteBooth extends Object implements IVoteBooth
     /**
      * @return \org\haf\ivs\key\IPublicKey
      */
-    public function getPublicKey()
+    public function &getPublicKey()
     {
+        if ($this->publicKey == null) {
+            $this->publicKey = Ivs::$instance->getKeyManager()->getSignerPublicKey($this->getId());
+        }
         return $this->publicKey;
-    }
-
-
-    /**
-     * @param \org\haf\ivs\candidate\ICandidate $candidate
-     * @return Ballot
-     */
-    function createBallotForCandidate($candidate)
-    {
-        $ballot = new Ballot();
-        $ballot->setCandidate($candidate);
-        $ballot->setSigner($this);
-        return $ballot;
     }
 }

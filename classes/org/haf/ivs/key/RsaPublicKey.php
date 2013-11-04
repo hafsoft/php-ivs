@@ -21,7 +21,7 @@ class RsaPublicKey extends RsaKey implements IPublicKey
         parent::__construct($filename);
 
         /** @noinspection PhpVoidFunctionResultUsedInspection */
-        $this->key = openssl_get_publickey($this->keyString);
+        $this->key = openssl_pkey_get_public($this->keyString);
     }
 
     /**
@@ -31,7 +31,7 @@ class RsaPublicKey extends RsaKey implements IPublicKey
      */
     public function verify($data, $signature)
     {
-        return openssl_verify($data, $signature, $this->key);
+        return openssl_verify(base64_decode($data), $signature, $this->key);
     }
 
     /**
@@ -50,7 +50,7 @@ class RsaPublicKey extends RsaKey implements IPublicKey
     public function encryptData($data)
     {
         if (openssl_public_encrypt($data, $encrypted, $this->key)) {
-            return $encrypted;
+            return base64_encode($encrypted);
         }
         throw new KeyException();
     }
@@ -62,7 +62,7 @@ class RsaPublicKey extends RsaKey implements IPublicKey
      */
     public function decryptData($data)
     {
-        if (openssl_public_decrypt($data, $decrypted, $this->key)) {
+        if (openssl_public_decrypt(base64_decode($data), $decrypted, $this->key)) {
             return $decrypted;
         }
         throw new KeyException();

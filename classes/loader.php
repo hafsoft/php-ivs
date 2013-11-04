@@ -1,5 +1,10 @@
 <?php
 
+
+if (!defined('DEBUG')) {
+    define('DEBUG', FALSE);
+}
+
 if (! class_exists('ClassLoader')) {
     class ClassLoader
     {

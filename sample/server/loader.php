@@ -9,6 +9,7 @@ if (! class_exists('ClassLoader')) {
         public static function autoLoad($className) {
             foreach(self::$includeDirs as $dir) {
                 $classFile = "$dir/$className.php";
+
                 if (file_exists($className)) {
                     /** @noinspection PhpIncludeInspection */
                     include $classFile;

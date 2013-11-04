@@ -16,6 +16,10 @@ class IvsService extends Ivs
 
     protected $privLevel;
 
+    private $sessionId;
+
+    private $currentVoter;
+
     /**
      *
      */
@@ -34,6 +38,7 @@ class IvsService extends Ivs
 
         /** @var IvsServiceRequest $request */
         $request          = IvsServiceRequest::fromArray(Json::unSerializeFromJson($raw_input));
+        $this->sessionId  = $request->getSessionId();
         $respond          = $this->processRequest($request);
         $respondTxt       = Json::serializeToJson($respond);
         echo $respondTxt;
@@ -57,6 +62,8 @@ class IvsService extends Ivs
 
             if ($manager->isMethodAllowed($request->getMethodName())) {
                 try {
+                    Ivs::log('calling %s->%s(%s)', $request->getManagerName(), $request->getMethodName(),
+                        '');
                     $result = call_user_func_array(array(&$manager, $request->getMethodName()), $request->getArguments());
                 } catch (IvsException $e) {
                     $error = $e;
@@ -64,7 +71,8 @@ class IvsService extends Ivs
                     $error = new IvsException(IvsException::ERROR_UNKNOWN, $e->getMessage());
                 }
             } else {
-                $error = new IvsException(IvsException::METHOD_NOT_SUPPORTED, 'Action Not Supported');
+                $error = new IvsException(IvsException::ACCESS_DENIED, 'can not call "%s::%s()"',
+                    $request->getManagerName(), $request->getMethodName());
             }
         } else {
             $error = new IvsException(IvsException::INVALID_REQUEST, 'Invalid Request');
@@ -73,24 +81,11 @@ class IvsService extends Ivs
         return new IvsServiceRespond($request->getId(), $result, $error);
     }
 
-    /**
-     * @param string $name
-     * @return IManager
-     * @throws IvsException
-     */
-    protected function createManager($name)
-    {
-        if (isset($this->config['manager'][$name])) {
-            $args = $this->config['manager'][$name];
-            if (is_array($args)) {
-                $className = $args['class'];
-            } else {
-                $className = $args;
-                $args      = null;
-            }
-            $manager = new $className($this, $args);
-            return $manager;
+    public function &getCurrentVoter() {
+        if ($this->currentVoter === NULL) {
+            $this->currentVoter = $this->getVoterManager()->getFromSessionId($this->sessionId);
         }
-        throw new IvsException(IvsException::MANAGER_NOT_DEFINED, "Manager $name not defined");
+        return $this->currentVoter;
     }
+
 }

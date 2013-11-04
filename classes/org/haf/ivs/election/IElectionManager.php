@@ -20,11 +20,11 @@ interface IElectionManager extends IManager
      * @return IElection
      * @throw ElectionException
      */
-    public function getFromId($id);
+    public function getById($id);
 
     /**
      * @param string[] $ids
      * @return IElection[]
      */
-    public function getFromIds($ids);
+    public function getByIds($ids);
 }

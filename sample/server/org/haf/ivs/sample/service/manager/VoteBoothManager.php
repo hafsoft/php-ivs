@@ -26,7 +26,7 @@ class VoteBoothManager extends AbstractManager implements IVoteBoothManager {
         $voteBooth = new VoteBooth();
         $voteBooth->setId($id);
 
-        if ($this->ivs->isRemoteCall()) {
+        if ($this->isRemoteCall()) {
             $privateKey = $this->ivs->getKeyManager()->getSignerPrivateKey($id);
             if ($privateKey) {
                 $voteBooth->setPrivateKey($privateKey);

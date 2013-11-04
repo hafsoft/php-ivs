@@ -29,27 +29,18 @@ class PackedBallot extends Object implements IPackedBallot
     private $encryptedData;
 
     /**
-     * @return IBallot
+     * @param null $electionId
+     * @param null $signerId
+     * @param null $encryptedData
+     * @param null $signature
+     * @param null $signature
      */
-    public function unpack()
+    function __construct($electionId = null, $signerId = null, $encryptedData = null, $signature = null)
     {
-
-        $election = Ivs::$instance->getElectionManager()->getFromId($this->electionId);
-        $jsonData = $election->getPrivateKey()->decryptData($this->encryptedData);
-        $data     = json_decode($jsonData, true);
-        if ($data['eid'] !== $this->electionId) {
-            // TODO: apa??
-        }
-        $candidate = $election->getCandidateById($data['cid']);
-        $signer    = Ivs::$instance->getVoteBothManager()->getById($this->signerId);
-        $verified  = $signer->getPublicKey()->verify($this->encryptedData, $this->signature);
-
-        $ballot = new Ballot();
-        $ballot->setCandidate($candidate);
-        $ballot->setSigner($signer);
-        $ballot->setVerified($verified);
-
-        return $ballot;
+        $this->electionId    = $electionId;
+        $this->encryptedData = $encryptedData;
+        $this->signature     = $signature;
+        $this->signerId      = $signerId;
     }
 
     /**
@@ -116,5 +107,14 @@ class PackedBallot extends Object implements IPackedBallot
         return $this->encryptedData;
     }
 
+    public function getPropertiesName() {
+        return FALSE;
+    }
 
+    public function getConstructParams() {
+        return array(
+            $this->electionId, $this->signerId,
+            $this->encryptedData, $this->signature
+        );
+    }
 }

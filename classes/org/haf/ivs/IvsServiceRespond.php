@@ -94,10 +94,11 @@ class IvsServiceRespond implements IObject
 
     public static function fromArray($array)
     {
+        $a = $array;
         return new IvsServiceRespond(
             isset($array['id']) ? $array['id'] : null,
             isset($array['result']) ? $array['result'] : null,
-            isset($array['error']) ? IvsException::fromArray($array['error']) : null
+            isset($array['error']) ? $array['error'] : null
         );
     }
 }

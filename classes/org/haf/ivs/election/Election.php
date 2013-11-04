@@ -12,6 +12,7 @@ namespace org\haf\ivs\election;
 
 use org\haf\ivs\candidate\CandidateException;
 use org\haf\ivs\candidate\ICandidate;
+use org\haf\ivs\Ivs;
 use org\haf\ivs\key\IPrivateKey;
 use org\haf\ivs\key\IPublicKey;
 use org\haf\ivs\Object;
@@ -20,22 +21,22 @@ class Election extends Object implements IElection
 {
 
     /** @var string $id */
-    private $id;
+    protected $id;
 
     /** @var string */
-    private $name;
+    protected $name;
 
     /** @var  mixed */
-    private $info;
+    protected $info;
 
     /** @var  ICandidate[] */
-    private $candidates;
+    protected $candidates = null;
 
     /** @var  IPrivateKey */
-    private $privateKey;
+    protected $privateKey = null;
 
     /** @var  IPublicKey */
-    private $publicKey;
+    protected $publicKey = null;
 
     /**
      * @param ICandidate[] $candidates
@@ -48,7 +49,7 @@ class Election extends Object implements IElection
     /**
      * @return ICandidate[]
      */
-    public function getCandidates()
+    public function &getCandidates()
     {
         return $this->candidates;
     }
@@ -112,8 +113,11 @@ class Election extends Object implements IElection
     /**
      * @return IPrivateKey
      */
-    public function getPrivateKey()
+    public function &getPrivateKey()
     {
+        if ($this->privateKey == null) {
+            $this->privateKey = Ivs::$instance->getKeyManager()->getElectionPrivateKey($this->id);
+        }
         return $this->privateKey;
     }
 
@@ -128,8 +132,11 @@ class Election extends Object implements IElection
     /**
      * @return IPublicKey
      */
-    public function getPublicKey()
+    public function &getPublicKey()
     {
+        if ($this->publicKey == null) {
+            $this->publicKey = Ivs::$instance->getKeyManager()->getElectionPublicKey($this->id);
+        }
         return $this->publicKey;
     }
 
@@ -139,7 +146,7 @@ class Election extends Object implements IElection
      * @return ICandidate
      * @throws CandidateException
      */
-    public function getCandidateById($id)
+    public function &getCandidateById($id)
     {
         foreach ($this->getCandidates() as $candidate) {
             if ($candidate->getId() == $id) {
@@ -152,5 +159,18 @@ class Election extends Object implements IElection
         );
     }
 
+    public function getProperties(){
+        $props = parent::getProperties();
+        if (Ivs::$instance->isRemoteCall()) {
+            unset($props['privateKey']);
+        }
+        return $props;
+    }
 
+    public function setProperties($properties) {
+        parent::setProperties($properties);
+        foreach($this->candidates as &$candidate) {
+            $candidate->setElection($this);
+        }
+    }
 }

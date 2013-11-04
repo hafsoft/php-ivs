@@ -39,4 +39,11 @@ interface ICandidate extends IObject
      * @return IElection
      */
     public function getElection();
+
+    /**
+     * todo: remove it. how?
+     *
+     * @param IElection $election
+     */
+    public function setElection(&$election);
 }

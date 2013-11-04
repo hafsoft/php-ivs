@@ -26,12 +26,17 @@ class IvsException extends \Exception implements IObject
     /**
      * @param string $errorCode
      * @param null|string $errorDetails
+     * @param null $args
      */
-    public function __construct($errorCode = self::ERROR_UNKNOWN, $errorDetails = null)
+    public function __construct($errorCode = self::ERROR_UNKNOWN, $errorDetails = null, $args = null)
     {
         $this->errorCode    = $errorCode;
+        if ($args !== null) {
+            $funcArg = array_splice(func_get_args(), 2);
+            $errorDetails = vsprintf($errorDetails, $funcArg);
+        }
         $this->errorDetails = $errorDetails;
-        $this->message      = "ERROR: {$errorCode} {$errorDetails}";
+        $this->message      = "#{$errorCode}: {$errorDetails}";
         $this->code         = 99;
     }
 
@@ -61,11 +66,11 @@ class IvsException extends \Exception implements IObject
             return array(
                 '__exception__' => str_replace('\\', '.', get_class($this)),
                 '__code'        => $this->errorCode,
-                '__detail'      => $this->errorDetails,
+                '__detail'      => $this->errorDetails . "\n" . $this->getTraceAsString(),
                 '__debug'       => array(
                     'file'  => $this->getFile(),
                     'line'  => $this->getLine(),
-                    'trace' => $this->getTrace(),
+                    //'trace' => $this->getTrace(),
                 ),
             );
         }
@@ -80,7 +85,6 @@ class IvsException extends \Exception implements IObject
     {
         $this->file = $info['file'];
         $this->line = $info['line'];
-        //$this->
     }
 
     /**

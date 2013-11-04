@@ -14,11 +14,6 @@ use org\haf\ivs\IManager;
 
 interface IBallotManager extends IManager
 {
-    /**
-     * @param IPackedBallot $ballot
-     * @return boolean
-     */
-    public function savePackedBallot($ballot);
 
     /**
      * @param IPackedBallot[] $ballots
@@ -30,5 +25,5 @@ interface IBallotManager extends IManager
      * @param IElection $election
      * @return IBallotIterator
      */
-    public function getIteratorForElection($election);
+    public function getIteratorByElection($election);
 }

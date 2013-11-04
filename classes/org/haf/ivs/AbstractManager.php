@@ -47,9 +47,9 @@ abstract class AbstractManager implements IManager
             }
         } elseif (in_array($methodName, $allowedMethod)) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -57,6 +57,15 @@ abstract class AbstractManager implements IManager
      */
     protected function isClient()
     {
-        return is_a($this->ivs, 'ivs\IvsClient');
+        return is_a($this->ivs, 'org\haf\ivs\IvsClient');
     }
+
+    /**
+     * @return bool
+     */
+    protected function isRemoteCall() {
+        return $this->ivs->isRemoteCall();
+    }
+
+
 }

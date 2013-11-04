@@ -12,12 +12,15 @@ namespace org\haf\ivs;
 
 use org\haf\ivs\tool\CurlHttpRequest;
 use org\haf\ivs\tool\Json;
+use org\haf\ivs\voter\IVoter;
 
 class IvsClient extends Ivs
 {
 
     /** @var  string */
     private $serverAddress;
+
+    private $currentVoter;
 
     /**
      * @param string $serverAddress
@@ -50,6 +53,19 @@ class IvsClient extends Ivs
     }
 
 
+    /**
+     * @return IVoter
+     */
+    public function getCurrentVoter() {
+        return $this->currentVoter;
+    }
+
+    /**
+     * @param IVoter $voter
+     */
+    public function setCurrentVoter($voter) {
+        $this->currentVoter = $voter;
+    }
 }
 
 
@@ -88,15 +104,20 @@ class ManagerClient implements IManager
     {
         $http = new CurlHttpRequest();
 
-        //$xdebug_session = isset($_GET['XDEBUG_SESSION_START']) ? $_GET['XDEBUG_SESSION_START'] : null;
-        $xdebug_session = 123;
+        $xdebug_session = (isset($_GET['XDEBUG_SESSION_START']) || isset($_COOKIE['XDEBUG_SSESSION'])) ? null : 123;
+        //$xdebug_session = 123;
         $xdebug_str     = $xdebug_session ? '&XDEBUG_SESSION_START=' . $xdebug_session : '';
 
         $http->open('POST', $this->parent->getServerAddress() . '?r=' . time() . rand(0, 99999) . $xdebug_str);
         $http->addHeader('Connection', 'close');
 
-        $request       = new IvsServiceRequest($this->name, $action, $arguments);
+        DEBUG &&
+            Ivs::log('calling %s->%s()', $this->name, $action);
+        $currentVoter  = $this->parent->getCurrentVoter();
+        $sessionId = $currentVoter ? $currentVoter->getSessionId() : NULL;
+        $request       = new IvsServiceRequest($this->name, $action, $arguments, $sessionId);
         $respondString = $http->send(Json::serializeToJson($request->toArray()));
+        DEBUG && Ivs::log('receive %s', $respondString);
 
         $respond = IvsServiceRespond::fromArray(Json::unSerializeFromJson($respondString));
         if ($respond->getError())

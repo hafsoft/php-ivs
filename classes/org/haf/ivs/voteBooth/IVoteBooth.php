@@ -10,31 +10,16 @@
 namespace org\haf\ivs\voteBooth;
 
 use org\haf\ivs\ballot\IBallot;
+use org\haf\ivs\ballot\IBallotSigner;
 use org\haf\ivs\candidate\ICandidate;
 use org\haf\ivs\IObject;
 use org\haf\ivs\key\IPrivateKey;
 use org\haf\ivs\key\IPublicKey;
 
-interface IVoteBooth extends IObject
+interface IVoteBooth extends IObject, IBallotSigner
 {
     /**
      * @return string
      */
     public function getId();
-
-    /**
-     * @return IPrivateKey
-     */
-    function getPrivateKey();
-
-    /**
-     * @return IPublicKey
-     */
-    function getPublicKey();
-
-    /**
-     * @param ICandidate $candidate
-     * @return IBallot
-     */
-    function createBallotForCandidate($candidate);
 }

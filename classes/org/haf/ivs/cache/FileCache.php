@@ -10,7 +10,7 @@
 namespace org\haf\ivs\cache;
 
 
-class FileCache implements ICache
+class FileCache extends AbstractCache implements ICache
 {
     private $cacheDir;
 

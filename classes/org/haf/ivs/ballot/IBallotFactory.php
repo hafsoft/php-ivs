@@ -20,4 +20,12 @@ interface IBallotFactory
      * @return IBallot
      */
     public function createBallot($candidate, $signer);
+
+    public function packBallot($ballot);
+
+    /**
+     * @param IPackedBallot $packedBallot
+     * @return IBallot
+     */
+    public function unpackBallot($packedBallot);
 }

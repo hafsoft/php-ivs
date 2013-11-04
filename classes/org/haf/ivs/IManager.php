@@ -24,5 +24,4 @@ interface IManager
      * @return bool
      */
     public function isMethodAllowed($methodName);
-
 }

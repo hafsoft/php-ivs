@@ -31,13 +31,13 @@ class Voter extends Object implements IVoter
      */
     public function setElections($elections)
     {
-        $this->elections = $elections;
+        $this->elections =& $elections;
     }
 
     /**
      * @return \org\haf\ivs\election\IElection[]
      */
-    public function getElections()
+    public function &getElections()
     {
         if ($this->elections === null) {
             $result   = array();
@@ -45,7 +45,7 @@ class Voter extends Object implements IVoter
 
             $i = 0;
             foreach ($this->electionIds as $id) {
-                $election = Ivs::$instance->getCache()->get('election:' . $id);
+                $election =& Ivs::$instance->getCache()->get('election:' . $id);
                 if ($election === null) {
                     $idsToGet[$id] = $i;
                     $result[]      = $id;
@@ -57,13 +57,13 @@ class Voter extends Object implements IVoter
             }
 
             if ($idsToGet) {
-                $gottenElections = Ivs::$instance->getElectionManager()->getFromIds(array_keys($idsToGet));
+                $gottenElections = Ivs::$instance->getElectionManager()->getByIds(array_keys($idsToGet));
                 foreach ($gottenElections as $election) {
                     $result[$idsToGet[$election->getId()]] = $election;
                 }
             }
 
-            $this->elections = $result;
+            $this->elections =& $result;
         }
         return $this->elections;
     }

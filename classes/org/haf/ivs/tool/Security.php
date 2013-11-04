@@ -15,7 +15,7 @@ class Security
         static $chr = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-=+_)(*^%$@!`~[]{};:,.";
         $result = '';
         for ($i = 0; $i < $len; $i++) {
-            $result .= $chr[mt_rand(0, strlen($chr))];
+            $result .= $chr[mt_rand(0, strlen($chr) - 1)];
         }
         return $result;
     }

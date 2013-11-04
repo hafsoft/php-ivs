@@ -15,11 +15,6 @@ use org\haf\ivs\IObject;
 interface IPackedBallot extends IObject
 {
     /**
-     * @return IBallot
-     */
-    public function unpack();
-
-    /**
      * @return string
      */
     public function getSignature();
