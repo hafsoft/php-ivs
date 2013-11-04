@@ -12,7 +12,7 @@ namespace org\haf\ivs\cache;
 
 use org\haf\ivs\IObject;
 
-interface ICache
+interface ICacheManager
 {
     public function get($key);
 

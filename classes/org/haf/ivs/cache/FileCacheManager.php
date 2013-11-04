@@ -10,7 +10,7 @@
 namespace org\haf\ivs\cache;
 
 
-class FileCache extends AbstractCache implements ICache
+class FileCacheManager extends AbstractCacheManager implements ICacheManager
 {
     private $cacheDir;
 
@@ -45,6 +45,7 @@ class FileCache extends AbstractCache implements ICache
     public function remove($key)
     {
         $file = $this->getCacheName($key);
-        unlink($file);
+        if (file_exists($file))
+            unlink($file);
     }
 }

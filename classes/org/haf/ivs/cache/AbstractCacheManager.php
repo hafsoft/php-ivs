@@ -12,7 +12,7 @@ namespace org\haf\ivs\cache;
 
 use org\haf\ivs\IObject;
 
-abstract class AbstractCache implements ICache {
+abstract class AbstractCacheManager implements ICache {
 
     protected function getObjectCacheName($type, $id) {
         return "ivs:$type:$id";
