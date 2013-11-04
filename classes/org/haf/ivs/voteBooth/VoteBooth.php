@@ -56,7 +56,7 @@ class VoteBooth extends Object implements IVoteBooth
     public function &getPrivateKey()
     {
         if ($this->privateKey == null) {
-            $this->privateKey = Ivs::$instance->getKeyManager()->getSignerPrivateKey($this->getId());
+            $this->privateKey = Ivs::app()->getKeyManager()->getSignerPrivateKey($this->getId());
         }
         return $this->privateKey;
     }
@@ -75,7 +75,7 @@ class VoteBooth extends Object implements IVoteBooth
     public function &getPublicKey()
     {
         if ($this->publicKey == null) {
-            $this->publicKey = Ivs::$instance->getKeyManager()->getSignerPublicKey($this->getId());
+            $this->publicKey = Ivs::app()->getKeyManager()->getSignerPublicKey($this->getId());
         }
         return $this->publicKey;
     }

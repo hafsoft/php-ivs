@@ -18,15 +18,15 @@ class RsaPrivateKey extends RsaKey implements IPrivateKey
 
     private $key;
 
-    public function __construct($filename = null)
-    {
-        parent::__construct($filename);
-
-        /** @noinspection PhpVoidFunctionResultUsedInspection */
-        $key = openssl_get_privatekey($this->keyString);
-        if ($key) {
-            $this->key = $key;
+    /**
+     * @return resource
+     */
+    protected function getKey() {
+        if ($this->key === null) {
+            /** @noinspection PhpVoidFunctionResultUsedInspection */
+            $this->key = openssl_get_privatekey($this->keyString);
         }
+        return $this->key;
     }
 
     /**
@@ -34,7 +34,7 @@ class RsaPrivateKey extends RsaKey implements IPrivateKey
      */
     public function locked()
     {
-        return $this->key === null;
+        return $this->getKey() == false;
     }
 
     /**
@@ -44,6 +44,7 @@ class RsaPrivateKey extends RsaKey implements IPrivateKey
      */
     public function lock($password)
     {
+        // todo: benerin
         return true;
     }
 

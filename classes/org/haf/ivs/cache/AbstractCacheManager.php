@@ -10,9 +10,10 @@
 namespace org\haf\ivs\cache;
 
 
+use org\haf\ivs\AbstractManager;
 use org\haf\ivs\IObject;
 
-abstract class AbstractCacheManager implements ICache {
+abstract class AbstractCacheManager extends AbstractManager implements ICacheManager {
 
     protected function getObjectCacheName($type, $id) {
         return "ivs:$type:$id";
@@ -31,10 +32,11 @@ abstract class AbstractCacheManager implements ICache {
     /**
      * @param string $type
      * @param string $id
-     * @param IObject $object
+     * @param \org\haf\ivs\IObject $object
+     * @param int $ttl
      */
-    public function putObject($type, $id, $object)
+    public function putObject($type, $id, $object, $ttl = 0)
     {
-        $this->set($this->getObjectCacheName($type, $id), $object);
+        $this->set($this->getObjectCacheName($type, $id), $object, $ttl);
     }
 }

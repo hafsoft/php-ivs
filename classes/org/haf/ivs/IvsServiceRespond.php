@@ -33,6 +33,10 @@ class IvsServiceRespond implements IObject
         $this->error  = $error;
     }
 
+    function isValid() {
+        return $this->id !== null;
+    }
+
     /**
      * @param \org\haf\ivs\IvsException|null $error
      */

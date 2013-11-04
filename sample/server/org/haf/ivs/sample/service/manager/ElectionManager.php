@@ -139,7 +139,7 @@ class ElectionManager extends AbstractManager implements IElectionManager {
         if (isset($this->cache[$id])) {
             return $this->cache[$id];
         }
-        if (null === ($election = $this->ivs->getCache()->fetchObject('Election', $id))) {
+        if (null === ($election = $this->ivs->getCacheManager()->fetchObject('Election', $id))) {
             if (isset(self::$elections[$id])) {
                 $prop = self::$elections[$id];
                 $election = new Election();
@@ -149,7 +149,6 @@ class ElectionManager extends AbstractManager implements IElectionManager {
                 $candidates = array();
                 foreach($prop['candidates'] as $c) {
                     $candidate = new Candidate();
-                    $candidate->setElection($election);
                     $candidate->setName($c['name']);
                     $candidate->setId($c['seq'] + $id * 50);
                     $candidate->setPhoto(Base64Encoder::encodeFile('photo/' . rand(1, 7) . '.jpg'));

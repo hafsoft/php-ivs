@@ -22,29 +22,39 @@ class FileCacheManager extends AbstractCacheManager implements ICacheManager
         }
     }
 
-    private function getCacheName($key)
+    private function getCacheFileName($key)
     {
         return $this->cacheDir . '/' . $key;
     }
 
     public function get($key)
     {
-        $file = $this->getCacheName($key);
+        $file = $this->getCacheFileName($key);
         if (file_exists($file)) {
-            return unserialize(file_get_contents($file));
-        } else
-            return null;
+            $obj = unserialize(file_get_contents($file));
+            if (time() < $obj['t']) {
+                return $obj['o'];
+            } else {
+                unlink($file);
+            }
+        }
+
+        return null;
     }
 
-    public function set($key, $value)
+    public function set($key, $value, $ttl = 0)
     {
-        $file = $this->getCacheName($key);
-        file_put_contents($file, serialize($value));
+        $file = $this->getCacheFileName($key);
+        $obj = array(
+            'o' => $value,
+            't' => $ttl <= 0 ? 0xffffffff : time() + $ttl,
+        );
+        file_put_contents($file, serialize($obj));
     }
 
     public function remove($key)
     {
-        $file = $this->getCacheName($key);
+        $file = $this->getCacheFileName($key);
         if (file_exists($file))
             unlink($file);
     }

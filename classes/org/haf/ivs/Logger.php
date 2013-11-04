@@ -14,9 +14,9 @@ class Logger {
     private $fh;
     private $ivsClass;
 
-    public function __construct($filename = '/var/log/ivs.log') {
+    public function __construct($ivs, $filename = '/var/log/ivs.log') {
         $this->fh = fopen($filename, 'a');
-        $arr = explode('\\', get_class(Ivs::$instance));
+        $arr = explode('\\', get_class($ivs));
         $this->ivsClass = $arr[count($arr) - 1];
     }
 

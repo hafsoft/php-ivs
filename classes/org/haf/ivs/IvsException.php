@@ -13,15 +13,18 @@ class IvsException extends \Exception implements IObject
 {
     const ERROR_UNKNOWN        = 'ivs:unknown';
     const INVALID_REQUEST      = 'ivs:invalidRequest';
+    const INVALID_RESPOND      = 'ivs:invalidRespond';
     const METHOD_NOT_SUPPORTED = 'ivs:methodNotSupported';
     const ACCESS_DENIED        = 'ivs:accessDenied';
     const MANAGER_NOT_DEFINED  = 'ivs:managerNotDefined';
     const PROPERTY_NOT_FOUND   = 'ivs:propertyNotFound';
     const UNKNOWN_CLASS        = 'ivs:unknownClass';
-
+    const NOT_FOUND            = 'ivs:notFound';
+    const NOT_INITIALIZED      = 'ivs:notInitialized';
 
     private $errorCode;
     private $errorDetails;
+    private $errorTrace;
 
     /**
      * @param string $errorCode
@@ -36,8 +39,8 @@ class IvsException extends \Exception implements IObject
             $errorDetails = vsprintf($errorDetails, $funcArg);
         }
         $this->errorDetails = $errorDetails;
-        $this->message      = "#{$errorCode}: {$errorDetails}";
         $this->code         = 99;
+        $this->message =  "#{$this->errorCode} {$this->errorDetails}";
     }
 
     /**
@@ -66,11 +69,11 @@ class IvsException extends \Exception implements IObject
             return array(
                 '__exception__' => str_replace('\\', '.', get_class($this)),
                 '__code'        => $this->errorCode,
-                '__detail'      => $this->errorDetails . "\n" . $this->getTraceAsString(),
+                '__detail'      => $this->errorDetails,
                 '__debug'       => array(
                     'file'  => $this->getFile(),
                     'line'  => $this->getLine(),
-                    //'trace' => $this->getTrace(),
+                    'trace' => $this->getTraceAsString(),
                 ),
             );
         }
@@ -81,10 +84,16 @@ class IvsException extends \Exception implements IObject
         );
     }
 
+    public function __toString() {
+        return $this->message;
+    }
+
     private function setAdditionalInfo($info)
     {
         $this->file = $info['file'];
         $this->line = $info['line'];
+        $this->errorTrace = $info['trace'];
+        //$this->message .= "\n\n" . $info['trace'];
     }
 
     /**

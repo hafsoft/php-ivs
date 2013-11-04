@@ -28,11 +28,17 @@ abstract class RsaKey extends Object implements Ikey
         }
     }
 
-
-
-
     protected function getConstructParams()
     {
         return array('keyString' => $this->keyString);
+    }
+
+    /**
+     * @return resource
+     */
+    abstract protected function getKey();
+
+    public function __sleep() {
+        return array('keyString');
     }
 }

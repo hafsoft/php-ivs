@@ -116,7 +116,7 @@ class Election extends Object implements IElection
     public function &getPrivateKey()
     {
         if ($this->privateKey == null) {
-            $this->privateKey = Ivs::$instance->getKeyManager()->getElectionPrivateKey($this->id);
+            $this->privateKey = Ivs::app()->getKeyManager()->getElectionPrivateKey($this->id);
         }
         return $this->privateKey;
     }
@@ -135,7 +135,7 @@ class Election extends Object implements IElection
     public function &getPublicKey()
     {
         if ($this->publicKey == null) {
-            $this->publicKey = Ivs::$instance->getKeyManager()->getElectionPublicKey($this->id);
+            $this->publicKey = Ivs::app()->getKeyManager()->getElectionPublicKey($this->id);
         }
         return $this->publicKey;
     }
@@ -161,16 +161,9 @@ class Election extends Object implements IElection
 
     public function getProperties(){
         $props = parent::getProperties();
-        if (Ivs::$instance->isRemoteCall()) {
+        if (Ivs::app()->isRemoteCall()) {
             unset($props['privateKey']);
         }
         return $props;
-    }
-
-    public function setProperties($properties) {
-        parent::setProperties($properties);
-        foreach($this->candidates as &$candidate) {
-            $candidate->setElection($this);
-        }
     }
 }

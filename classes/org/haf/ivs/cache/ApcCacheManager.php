@@ -10,20 +10,22 @@
 namespace org\haf\ivs\cache;
 
 
+use org\haf\ivs\Ivs;
+
 class ApcCacheManager extends AbstractCacheManager implements ICacheManager {
 
     public function get($key)
     {
-        // TODO: Implement get() method.
+        return apc_fetch($key);
     }
 
-    public function set($key, $value)
+    public function set($key, $value, $ttl = 0)
     {
-        // TODO: Implement set() method.
+        apc_store($key, $value, $ttl);
     }
 
     public function remove($key)
     {
-        // TODO: Implement remove() method.
+        apc_delete($key);
     }
 }

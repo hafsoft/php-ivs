@@ -10,6 +10,8 @@
 namespace org\haf\ivs\voteBooth;
 
 
-class VoteBoothException {
+use org\haf\ivs\IvsException;
+
+class VoteBoothException extends IvsException {
 
 }

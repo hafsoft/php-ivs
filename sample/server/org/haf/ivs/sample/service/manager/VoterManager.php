@@ -67,17 +67,19 @@ class VoterManager extends AbstractManager implements IVoterManager {
     {
         switch ($method) {
             case 'token':
+                if (! isset($authParam['username'], $authParam['password'], $authParam['token'])) {
+                    throw new VoterException(VoterException::INFO_NOT_COMPLETE, 'Login info not complete');
+                }
                 $id = $this->authenticateToken($authParam['username'], $authParam['password'], $authParam['token']);
                 break;
 
             case 'smartCard':
-                $id = $this->authenticateSmartCard($authParam['npm'], $authParam['secret']);
+                $id = $this->authenticateSmartCard($authParam['npm'], null);
                 break;
 
             default:
                 throw new VoterException(VoterException::METHOD_NOT_SUPPORTED);
         }
-        $params = self::$voters[$id];
         $voter = $this->getById($id);
         $voter->setSessionId($this->createSessionForId($id));
         return $voter;
@@ -85,10 +87,10 @@ class VoterManager extends AbstractManager implements IVoterManager {
 
     /**
      * @param string $id
-     * @return \org\haf\ivs\IObject|Voter
+     * @return Voter
      */
     private function &getById($id) {
-        $cache = $this->ivs->getCache();
+        $cache = $this->ivs->getCacheManager();
         if (null === ($voter = $cache->fetchObject('voter', $id))) {
             $voter = $this->getByIdImpl($id);
             $cache->putObject('voter', $id, $voter);
@@ -109,24 +111,26 @@ class VoterManager extends AbstractManager implements IVoterManager {
         return $voter;
     }
 
+
     /**
      * @param string $id
      * @return string
      */
     private function createSessionForId($id) {
-        $salt = Security::generateSalt(5);
-        $token = Security::generateSalt(5);
-        $sid = "$id:$salt:$token";
-        $cacheName = "ivs:session:$id:$salt";
-        $hash = md5($sid);
-        $this->ivs->getCache()->set($cacheName, $hash);
+        $salt = Security::generateSalt(25);
+        $sid = "$id:$salt";
+        $hash = sha1($sid);
+        $cacheName = "session/$id-$hash";
+        //$this->ivs->getCacheManager()->set($cacheName, $hash);
+        //file_put_contents($cacheName, $hash);
+        touch($cacheName);
         return $sid;
     }
 
     /**
-     * @param $userName
-     * @param $password
-     * @param $token
+     * @param string $userName
+     * @param string $password
+     * @param string $token
      * @throws \org\haf\ivs\voter\VoterException
      * @return int|string ada
      */
@@ -166,10 +170,11 @@ class VoterManager extends AbstractManager implements IVoterManager {
      */
     public function &getFromSessionId($sessionId)
     {
-        list($id, $salt, $token) = explode(':', $sessionId);
-        $cacheName = "ivs:session:$id:$salt";
-        $hash = $this->ivs->getCache()->get($cacheName);
-        if ($hash === md5($sessionId)) {
+        list($id, $salt) = explode(':', $sessionId);
+        $sid = "$id:$salt";
+        $hash = sha1($sid);
+        $cacheName = "session/$id-$hash";
+        if (file_exists($cacheName)) {
             $voter = $this->getById($id);
             $voter->setSessionId($sessionId);
             return $voter;
@@ -185,8 +190,11 @@ class VoterManager extends AbstractManager implements IVoterManager {
      */
     public function logout($sessionId)
     {
-        list($id, $salt, $token) = explode(':', $sessionId);
-        $cacheName = "ivs:session:$id:$salt";
-        $this->ivs->getCache()->remove($cacheName);
+        list($id, $salt) = explode(':', $sessionId);
+        $sid = "$id:$salt";
+        $hash = sha1($sid);
+        $cacheName = "session/$id-$hash";
+        //$this->ivs->getCacheManager()->remove($cacheName);
+        file_exists($cacheName) && unlink($cacheName);
     }
 }

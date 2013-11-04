@@ -10,13 +10,14 @@
 namespace org\haf\ivs\cache;
 
 
+use org\haf\ivs\IManager;
 use org\haf\ivs\IObject;
 
-interface ICacheManager
+interface ICacheManager extends IManager
 {
     public function get($key);
 
-    public function set($key, $value);
+    public function set($key, $value, $ttl = 0);
 
     public function remove($key);
 
@@ -31,6 +32,7 @@ interface ICacheManager
      * @param string $type
      * @param string $id
      * @param IObject $object
+     * @param int $ttl
      */
-    public function putObject($type, $id, $object);
+    public function putObject($type, $id, $object, $ttl = 0);
 }

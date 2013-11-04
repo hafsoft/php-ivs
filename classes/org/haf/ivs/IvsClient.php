@@ -14,6 +14,11 @@ use org\haf\ivs\tool\CurlHttpRequest;
 use org\haf\ivs\tool\Json;
 use org\haf\ivs\voter\IVoter;
 
+/**
+ * Class IvsClient
+ *
+ * @package org\haf\ivs
+ */
 class IvsClient extends Ivs
 {
 
@@ -24,10 +29,11 @@ class IvsClient extends Ivs
 
     /**
      * @param string $serverAddress
+     * @param array $config
      */
-    function __construct($serverAddress)
+    function __construct($serverAddress, $config = array())
     {
-        parent::__construct(array());
+        parent::__construct($config);
         $this->serverAddress = $serverAddress;
     }
 
@@ -52,7 +58,6 @@ class IvsClient extends Ivs
         return new ManagerClient($this, array('name' => $name));
     }
 
-
     /**
      * @return IVoter
      */
@@ -68,7 +73,11 @@ class IvsClient extends Ivs
     }
 }
 
-
+/**
+ * Class ManagerClient
+ *
+ * @package org\haf\ivs
+ */
 class ManagerClient implements IManager
 {
 
@@ -98,7 +107,7 @@ class ManagerClient implements IManager
      * @param string $action
      * @param mixed $arguments
      * @throws IvsException
-     * @return IObject
+     * @return mixed
      */
     private function sendCommand($action, $arguments = null)
     {
@@ -120,10 +129,21 @@ class ManagerClient implements IManager
         DEBUG && Ivs::log('receive %s', $respondString);
 
         $respond = IvsServiceRespond::fromArray(Json::unSerializeFromJson($respondString));
-        if ($respond->getError())
+        if (! $respond->isValid()) {
+            throw new IvsException(IvsException::INVALID_RESPOND, "invalid respond\n$respondString");
+        }
+        if ($respond->getError()){
             throw $respond->getError();
+        }
         return $respond->getResult();
     }
 
-    public function isMethodAllowed($methodName) {}
+    /**
+     * @param string $methodName
+     * @return bool
+     */
+    public function isMethodAllowed($methodName)
+    {
+        // nothing to do here
+    }
 }

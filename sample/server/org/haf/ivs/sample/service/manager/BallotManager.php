@@ -15,7 +15,6 @@ use org\haf\ivs\ballot\IBallotIterator;
 use org\haf\ivs\ballot\IBallotManager;
 use org\haf\ivs\ballot\IPackedBallot;
 use org\haf\ivs\election\IElection;
-use org\haf\ivs\IvsException;
 use org\haf\ivs\sample\service\tally\BallotFileIterator;
 
 class BallotManager extends AbstractManager implements IBallotManager {
@@ -23,11 +22,11 @@ class BallotManager extends AbstractManager implements IBallotManager {
     /**
      * // must be atomic: all or nothing
      *
-     * @param IPackedBallot[] $ballots
+     * @param IPackedBallot[] $packedBallot
      * @throws \org\haf\ivs\ballot\BallotException
      * @return bool
      */
-    public function savePackedBallots($ballots)
+    public function savePackedBallots($packedBallot)
     {
         $currentVoter = $this->ivs->getCurrentVoter();
         if ($currentVoter === NULL) {
@@ -36,7 +35,7 @@ class BallotManager extends AbstractManager implements IBallotManager {
 
         $allowedElections = $currentVoter->getElections();
 
-        foreach($ballots as &$ballot) {
+        foreach($packedBallot as &$ballot) {
             $ok = false;
             foreach ($allowedElections as $election) {
                 if ($election->getId() === $ballot->getElectionId()) {
@@ -62,7 +61,7 @@ class BallotManager extends AbstractManager implements IBallotManager {
             file_put_contents($fileName, $str);
         }
 
-        $this->ivs->getVoterManager()->logout($currentVoter);
+        $this->ivs->getVoterManager()->logout($currentVoter->getSessionId());
         return TRUE;
     }
 

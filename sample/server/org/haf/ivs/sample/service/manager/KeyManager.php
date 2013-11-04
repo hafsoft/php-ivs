@@ -31,7 +31,10 @@ class KeyManager extends AbstractManager implements IKeyManager {
      */
     public function getSignerPrivateKey($signerId)
     {
-        return new RsaPrivateKey($this->getKeyFileName('privkey', 'signer', $signerId));
+        if (file_exists($file = $this->getKeyFileName('privkey', 'signer', $signerId)))
+            return new RsaPrivateKey($file);
+        else
+            return null;
     }
 
     /**
@@ -40,7 +43,10 @@ class KeyManager extends AbstractManager implements IKeyManager {
      */
     public function getSignerPublicKey($signerId)
     {
-        return new RsaPublicKey($this->getKeyFileName('pubkey', 'signer', $signerId));
+        if (file_exists($file = $this->getKeyFileName('pubkey', 'signer', $signerId)))
+            return new RsaPublicKey($file);
+        else
+            return null;
     }
 
     /**
@@ -49,7 +55,10 @@ class KeyManager extends AbstractManager implements IKeyManager {
      */
     public function getElectionPrivateKey($electionId)
     {
-        return new RsaPrivateKey($this->getKeyFileName('privkey', 'election', $electionId));
+        if (file_exists($file = $this->getKeyFileName('privkey', 'election', $electionId)))
+            return new RsaPrivateKey($file);
+        else
+            return null;
     }
 
     /**
@@ -58,6 +67,9 @@ class KeyManager extends AbstractManager implements IKeyManager {
      */
     public function getElectionPublicKey($electionId)
     {
-        return new RsaPublicKey($this->getKeyFileName('pubkey', 'election', $electionId));
+        if (file_exists($file = $this->getKeyFileName('pubkey', 'election', $electionId)))
+            return new RsaPublicKey($file);
+        else
+            return null;
     }
 }

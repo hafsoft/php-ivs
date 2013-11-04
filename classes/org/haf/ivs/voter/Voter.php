@@ -42,10 +42,11 @@ class Voter extends Object implements IVoter
         if ($this->elections === null) {
             $result   = array();
             $idsToGet = array();
+            $cache = Ivs::app()->getCacheManager();
 
             $i = 0;
             foreach ($this->electionIds as $id) {
-                $election =& Ivs::$instance->getCache()->get('election:' . $id);
+                $election =& $cache->fetchObject('election', $id);
                 if ($election === null) {
                     $idsToGet[$id] = $i;
                     $result[]      = $id;
@@ -57,9 +58,12 @@ class Voter extends Object implements IVoter
             }
 
             if ($idsToGet) {
-                $gottenElections = Ivs::$instance->getElectionManager()->getByIds(array_keys($idsToGet));
-                foreach ($gottenElections as $election) {
-                    $result[$idsToGet[$election->getId()]] = $election;
+                $gottenElections = Ivs::app()->getElectionManager()->getByIds(array_keys($idsToGet));
+                if ($gottenElections) {
+                    foreach ($gottenElections as $election) {
+                        $cache->putObject('election', $election->getId(), $election);
+                        $result[$idsToGet[$election->getId()]] = $election;
+                    }
                 }
             }
 
@@ -135,7 +139,7 @@ class Voter extends Object implements IVoter
     public function getProperties()
     {
         $properties = parent::getProperties();
-        if (Ivs::$instance->isRemoteCall())
+        if (Ivs::app()->isRemoteCall())
             unset($properties['elections']);
         return $properties;
     }

@@ -28,7 +28,7 @@ interface IVoterManager extends IManager
     public function getFromSessionId($sessionId);
 
     /**
-     * @param IVoter $voter Description
+     * @param string $voter Description
      *
      * @return boolean
      * @throws VoterException

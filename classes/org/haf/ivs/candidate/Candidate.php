@@ -16,7 +16,7 @@ class Candidate extends Object implements ICandidate
 {
 
     /** @var  IElection */
-    private $election;
+    //private $election;
 
     /** @var  $id */
     protected $id;
@@ -29,22 +29,6 @@ class Candidate extends Object implements ICandidate
 
     /** @var  string */
     protected $photo;
-
-    /**
-     * @param \org\haf\ivs\election\IElection $election
-     */
-    public function setElection(&$election)
-    {
-        $this->election =& $election;
-    }
-
-    /**
-     * @return \org\haf\ivs\election\IElection
-     */
-    public function &getElection()
-    {
-        return $this->election;
-    }
 
     /**
      * @param mixed $id

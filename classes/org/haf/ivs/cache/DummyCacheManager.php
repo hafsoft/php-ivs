@@ -10,14 +10,14 @@
 namespace org\haf\ivs\cache;
 
 
-class DummyCacheManager extends AbstractCache implements ICache {
+class DummyCacheManager extends AbstractCacheManager implements ICacheManager {
 
     public function get($key)
     {
         return NULL;
     }
 
-    public function set($key, $value)
+    public function set($key, $value, $ttl = 0)
     {
 
     }

@@ -16,10 +16,10 @@ interface IBallotManager extends IManager
 {
 
     /**
-     * @param IPackedBallot[] $ballots
+     * @param IPackedBallot[] $packedBallot
      * @return bool
      */
-    public function savePackedBallots($ballots);
+    public function savePackedBallots($packedBallot);
 
     /**
      * @param IElection $election
