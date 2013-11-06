@@ -55,7 +55,11 @@ class IvsClient extends Ivs
 
     protected function createManager($name)
     {
-        return new ManagerClient($this, array('name' => $name));
+        $manager = parent::createManager($name);
+        if ($manager === NULL) {
+            $manager = new ManagerClient($this, array('name' => $name));
+        }
+        return $manager;
     }
 
     /**
@@ -120,13 +124,13 @@ class ManagerClient implements IManager
         $http->open('POST', $this->parent->getServerAddress() . '?r=' . time() . rand(0, 99999) . $xdebug_str);
         $http->addHeader('Connection', 'close');
 
-        DEBUG &&
-            Ivs::log('calling %s->%s()', $this->name, $action);
         $currentVoter  = $this->parent->getCurrentVoter();
-        $sessionId = $currentVoter ? $currentVoter->getSessionId() : NULL;
+        $sessionId     = $currentVoter ? $currentVoter->getSessionId() : NULL;
         $request       = new IvsServiceRequest($this->name, $action, $arguments, $sessionId);
+
+        ENABLE_LOG && Ivs::log('calling %s->%s()', $this->name, $action);
         $respondString = $http->send(Json::serializeToJson($request->toArray()));
-        DEBUG && Ivs::log('receive %s', $respondString);
+        ENABLE_LOG && Ivs::log('receive %s', $respondString);
 
         $respond = IvsServiceRespond::fromArray(Json::unSerializeFromJson($respondString));
         if (! $respond->isValid()) {

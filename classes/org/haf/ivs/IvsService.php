@@ -9,21 +9,20 @@
 namespace org\haf\ivs;
 
 use org\haf\ivs\tool\Json;
+use org\haf\ivs\voter\IVoter;
 
 class IvsService extends Ivs
 {
-    protected $configuration;
-
-    protected $privLevel;
-
+    /** @var  string */
     private $sessionId;
 
+    /** @var  IVoter */
     private $currentVoter;
 
     /**
      *
      */
-    public function run()
+    public function handleRequest()
     {
         $this->remoteCall = true;
 
@@ -62,8 +61,12 @@ class IvsService extends Ivs
 
             if ($manager->isMethodAllowed($request->getMethodName())) {
                 try {
-                    Ivs::log('calling %s->%s(%s)', $request->getManagerName(), $request->getMethodName(),
-                        '');
+                    ENABLE_LOG && Ivs::log('calling %s->%s(%s)',
+                        $request->getManagerName(),
+                        $request->getMethodName(),
+                        substr(Json::serializeToJson($request->getArguments()), 1, -1)
+                    );
+
                     $result = call_user_func_array(array(&$manager, $request->getMethodName()), $request->getArguments());
                 } catch (IvsException $e) {
                     $error = $e;
@@ -81,6 +84,9 @@ class IvsService extends Ivs
         return new IvsServiceRespond($request->getId(), $result, $error);
     }
 
+    /**
+     * @return IVoter
+     */
     public function &getCurrentVoter() {
         if ($this->currentVoter === NULL) {
             $this->currentVoter = $this->getVoterManager()->getFromSessionId($this->sessionId);

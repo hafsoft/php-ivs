@@ -9,9 +9,15 @@
 
 namespace org\haf\ivs;
 
+/**
+ * Class IvsException
+ *
+ * @package org\haf\ivs
+ */
 class IvsException extends \Exception implements IObject
 {
     const ERROR_UNKNOWN        = 'ivs:unknown';
+    const NOT_FOUND            = 'ivs:notFound';
     const INVALID_REQUEST      = 'ivs:invalidRequest';
     const INVALID_RESPOND      = 'ivs:invalidRespond';
     const METHOD_NOT_SUPPORTED = 'ivs:methodNotSupported';
@@ -19,7 +25,6 @@ class IvsException extends \Exception implements IObject
     const MANAGER_NOT_DEFINED  = 'ivs:managerNotDefined';
     const PROPERTY_NOT_FOUND   = 'ivs:propertyNotFound';
     const UNKNOWN_CLASS        = 'ivs:unknownClass';
-    const NOT_FOUND            = 'ivs:notFound';
     const NOT_INITIALIZED      = 'ivs:notInitialized';
 
     private $errorCode;
@@ -41,6 +46,9 @@ class IvsException extends \Exception implements IObject
         $this->errorDetails = $errorDetails;
         $this->code         = 99;
         $this->message =  "#{$this->errorCode} {$this->errorDetails}";
+
+        ENABLE_LOG && Ivs::log('%s: %s', get_class($this), $this->message);
+        DEBUG && Ivs::log("start trace >>\n%s\n<<<", $this->getTraceAsString());
     }
 
     /**
@@ -65,22 +73,19 @@ class IvsException extends \Exception implements IObject
      */
     public function toArray()
     {
-        if (defined('DEBUG')) {
-            return array(
-                '__exception__' => str_replace('\\', '.', get_class($this)),
-                '__code'        => $this->errorCode,
-                '__detail'      => $this->errorDetails,
-                '__debug'       => array(
-                    'file'  => $this->getFile(),
-                    'line'  => $this->getLine(),
-                    'trace' => $this->getTraceAsString(),
-                ),
+        $debug = null;
+        if (DEBUG) {
+            $debug = array(
+                'file'  => $this->getFile(),
+                'line'  => $this->getLine(),
+                'trace' => $this->getTraceAsString(),
             );
         }
         return array(
-            '__exception__' => str_replace('\\', '.', get_class($this)),
+            '__obj__' => str_replace('\\', '.', get_class($this)),
             '__code'        => $this->errorCode,
-            '__detail'      => $this->errorDetails
+            '__detail'      => $this->errorDetails,
+            '__debug'       => $debug,
         );
     }
 
@@ -93,6 +98,7 @@ class IvsException extends \Exception implements IObject
         $this->file = $info['file'];
         $this->line = $info['line'];
         $this->errorTrace = $info['trace'];
+        Ivs::log("error trace from server >>\n%s\n<<", $info['trace']);
         //$this->message .= "\n\n" . $info['trace'];
     }
 
@@ -103,16 +109,13 @@ class IvsException extends \Exception implements IObject
      */
     public static function fromArray($array)
     {
-        $className = str_replace('.', '\\', $array['__exception__']);
-        if ($className === 'org\haf\ivs\IvsException' || is_subclass_of($className, 'org\haf\ivs\IvsException')) {
-            /** @var IvsException $err */
-            $err = new $className($array['__code'], $array['__detail']);
-            if (isset($array['__debug'])) {
-                $err->setAdditionalInfo($array['__debug']);
-            }
-
-            return $err;
+        /** @var IvsException $err */
+        $className = $array['__obj__'];
+        $err = new $className($array['__code'], $array['__detail']);
+        if (DEBUG && $array['__debug']) {
+            $err->setAdditionalInfo($array['__debug']);
         }
-        throw new \Exception("Unable to read Exception: $className");
+
+        return $err;
     }
 }

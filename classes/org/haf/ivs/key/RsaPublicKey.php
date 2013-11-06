@@ -34,7 +34,7 @@ class RsaPublicKey extends RsaKey implements IPublicKey
      */
     public function verify($data, $signature)
     {
-        return openssl_verify(base64_decode($data), $signature, $this->getKey());
+        return openssl_verify($data, base64_decode($signature), $this->getKey());
     }
 
     /**

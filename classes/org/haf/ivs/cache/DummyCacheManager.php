@@ -10,20 +10,32 @@
 namespace org\haf\ivs\cache;
 
 
+use org\haf\ivs\Ivs;
+
 class DummyCacheManager extends AbstractCacheManager implements ICacheManager {
 
-    public function get($key)
+    private $cache = array();
+
+    public function &get($key)
     {
-        return NULL;
+        static $null = NULL;
+
+        if (isset($this->cache[$key])) {
+            return $this->cache[$key];
+        } else {
+
+        }
+        return $null;
     }
 
     public function set($key, $value, $ttl = 0)
     {
-
+        $this->cache[$key] =& $value;
     }
 
     public function remove($key)
     {
-
+        unset($this->cache[$key]);
     }
+
 }

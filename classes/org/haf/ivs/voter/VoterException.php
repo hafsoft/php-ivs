@@ -18,7 +18,6 @@ class VoterException extends IvsException
     const WRONG_USER_NAME          = 'voter:wrongUserName';
     const WRONG_PASSWORD           = 'voter:wrongPassword';
     const WRONG_USER_NAME_PASSWORD = 'voter:wrongUserNamePassword';
-    const NOT_FOUND                = 'voter:notFound';
     const INFO_NOT_COMPLETE        = 'voter:authNotComplete';
 
 }

@@ -12,4 +12,4 @@ include_once __DIR__ . '/../../classes/loader.php';
 include_once __DIR__ . '/loader.php';
 $config = include "config.php";
 $service = new SampleService($config);
-$service->run();
+$service->handleRequest();

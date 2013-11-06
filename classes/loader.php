@@ -5,6 +5,10 @@ if (!defined('DEBUG')) {
     define('DEBUG', FALSE);
 }
 
+if (!defined('ENABLE_LOG')) {
+    define('ENABLE_LOG', TRUE);
+}
+
 if (! class_exists('ClassLoader')) {
     class ClassLoader
     {

@@ -13,5 +13,4 @@ use org\haf\ivs\IvsException;
 
 class ElectionException extends IvsException
 {
-    const NOT_FOUND = 'service:notFound';
 }

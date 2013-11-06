@@ -30,6 +30,7 @@ use org\haf\ivs\cache\FileCacheManager;
 use org\haf\ivs\cache\ICacheManager;
 use org\haf\ivs\election\IElectionManager;
 use org\haf\ivs\key\IKeyManager;
+use org\haf\ivs\logger\ILoggerManager;
 use org\haf\ivs\voteBooth\IVoteBoothManager;
 use org\haf\ivs\voter\IVoter;
 use org\haf\ivs\voter\IVoterManager;
@@ -53,22 +54,22 @@ abstract class Ivs
     /** @var  IManager[] */
     private $manager = array();
 
-    /** @var  ICacheManager */
-    private $cacheManager;
-
     /** @var bool */
     protected $remoteCall = false;
 
     /**
-     * @var Logger
+     * @var FileLogger
      */
     private $logger;
 
     private static $defaultConfig = array(
-        'logger' => array(
-            'file' => '/var/log/ivs.log',
+        'manager' => array(
+            'ICacheManager' => 'org\haf\ivs\cache\DummyCacheManager',
+            'ILoggerManager' => array(
+                'class' => 'org\haf\ivs\logger\FileLogger',
+                'file' => '/var/log/ivs.log',
+            ),
         ),
-        'manager' => array(),
     );
 
     /**
@@ -96,9 +97,13 @@ abstract class Ivs
         self::$instance =& $this;
 
         $this->config = array_merge_recursive(self::$defaultConfig, $config);
-        $this->logger = new Logger($this, $this->config['logger']['file']);
+        // $this->logger = new FileLogger($this, $this->config['logger']['file']);
 
-        self::log("Initialized.");
+        ENABLE_LOG && self::log("Initialized");
+    }
+
+    function __destruct() {
+        ENABLE_LOG && self::log('Closed');
     }
 
     /**
@@ -120,12 +125,15 @@ abstract class Ivs
      * todo: create documentation
      *
      * @param $name
+     * @throws IvsException
      * @return IManager
      */
     function &getManager($name)
     {
         if (!isset($this->manager[$name])) {
-            $this->manager[$name] = $this->createManager($name);
+            if (NULL === ($this->manager[$name] = $this->createManager($name))) {
+                throw new IvsException(IvsException::MANAGER_NOT_DEFINED, "Manager $name not defined");
+            }
         }
         return $this->manager[$name];
     }
@@ -133,7 +141,6 @@ abstract class Ivs
     /**
      * @param string $name
      * @return IManager
-     * @throws IvsException
      */
     protected function createManager($name)
     {
@@ -148,7 +155,7 @@ abstract class Ivs
             $manager = new $className($this, $args);
             return $manager;
         }
-        throw new IvsException(IvsException::MANAGER_NOT_DEFINED, "Manager $name not defined");
+        return NULL;
     }
 
 
@@ -159,10 +166,7 @@ abstract class Ivs
      */
     public function &getCacheManager()
     {
-        if ($this->cacheManager === null) {
-            $this->cacheManager = new DummyCacheManager($this);
-        }
-        return $this->cacheManager;
+        return $this->getManager('ICacheManager');
     }
 
 
@@ -217,6 +221,13 @@ abstract class Ivs
     }
 
     /**
+     * @return ILoggerManager
+     */
+    protected function getLoggerManager() {
+        return $this->getManager('ILoggerManager');
+    }
+
+    /**
      * @return bool
      */
     public function isRemoteCall() {
@@ -229,9 +240,9 @@ abstract class Ivs
      */
     public static function log($str, $args = null) {
         if ($args) {
-            self::app()->logger->logArgs($str, array_splice(func_get_args(), 1));
+            self::app()->getLoggerManager()->logArgs($str, array_splice(func_get_args(), 1));
         } else {
-            self::app()->logger->log($str);
+            self::app()->getLoggerManager()->log($str);
         }
     }
 }

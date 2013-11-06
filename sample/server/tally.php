@@ -13,7 +13,9 @@ include_once __DIR__ . '/../../classes/loader.php';
 include_once __DIR__ . '/loader.php';
 
 $config = include "config.php";
-$tally = new \org\haf\ivs\sample\service\SampleTally($config);
+$tally = new \org\haf\ivs\IvsTally($config);
 $election = $tally->getElectionManager()->getById(1);
 $election->getPrivateKey()->unlock('4213');
-$tally->startCounting($election);
+$result = $tally->countElection($election);
+
+var_dump($result);

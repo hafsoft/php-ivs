@@ -17,7 +17,12 @@ use org\haf\ivs\ballot\IPackedBallot;
 use org\haf\ivs\election\IElection;
 use org\haf\ivs\voter\IVoter;
 
-abstract class IvsTally extends Ivs {
+/**
+ * Class IvsTally
+ *
+ * @package org\haf\ivs
+ */
+class IvsTally extends Ivs {
 
     /**
      * @return IVoter
@@ -27,19 +32,15 @@ abstract class IvsTally extends Ivs {
         return null;
     }
 
-    public function startCounting(IElection $election) {
+    /**
+     * @param IElection $election
+     * @return \org\haf\ivs\TallyResult
+     */
+    public function countElection(IElection $election) {
         $factory = new BallotFactory($election);
         $iterator = $this->getBallotManager()->getIteratorByElection($election);
 
-        foreach($iterator as $packedBallot) {
-            /** @var IPackedBallot $packedBallot */
-            $ballot = $factory->unpackBallot($packedBallot);
-            $this->processBallot($ballot);
-        }
+        return new TallyResult($factory, $iterator);
     }
 
-    /**
-     * @param IBallot $ballot
-     */
-    abstract protected function processBallot($ballot);
 }

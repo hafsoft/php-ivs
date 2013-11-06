@@ -12,7 +12,13 @@ namespace org\haf\ivs\cache;
 
 class FileCacheManager extends AbstractCacheManager implements ICacheManager
 {
+    /** @var  string */
     private $cacheDir;
+
+    public function __construct($parent, $config = null) {
+        parent::__construct($parent, $config);
+        $this->setCacheDir($config['dir']);
+    }
 
     public function setCacheDir($dir)
     {

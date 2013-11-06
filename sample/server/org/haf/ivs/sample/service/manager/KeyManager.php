@@ -18,7 +18,7 @@ use org\haf\ivs\key\RsaPrivateKey;
 use org\haf\ivs\key\RsaPublicKey;
 
 class KeyManager extends AbstractManager implements IKeyManager {
-    private $keyDir = '/media/data/ivs/key';
+    private $keyDir = 'keys';
 
     private function getKeyFileName($keyType, $objectType, $objectId) {
         return "{$this->keyDir}/{$objectType}/{$objectId}-{$keyType}.pem";

@@ -59,13 +59,9 @@ class Json
                 $array[$key] = self::convertArrayToObject($value);
             }
 
-            if (isset($array['__class__'])) {
-                $array['__class__'] = str_replace('.', '\\', $array['__class__']);
-                return call_user_func(array($array['__class__'], 'fromArray'), $array);
-            }
-            elseif (isset($array['__exception__'])) {
-                $array['__exception__'] = str_replace('.', '\\', $array['__exception__']);
-                return call_user_func(array($array['__exception__'], 'fromArray'), $array);
+            if (isset($array['__obj__'])) {
+                $array['__obj__'] = str_replace('.', '\\', $array['__obj__']);
+                return call_user_func(array($array['__obj__'], 'fromArray'), $array);
             }
             else {
                 return $array;

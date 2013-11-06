@@ -63,13 +63,13 @@ class Ballot implements IBallot
      */
     public function setSigner($signer)
     {
-        $this->signer = $signer;
+        $this->signer =& $signer;
     }
 
     /**
      * @return ICandidate
      */
-    public function getCandidate()
+    public function &getCandidate()
     {
         return $this->candidate;
     }
@@ -77,7 +77,7 @@ class Ballot implements IBallot
     /**
      * @return IBallotSigner
      */
-    public function getSigner()
+    public function &getSigner()
     {
         return $this->signer;
     }
@@ -87,7 +87,7 @@ class Ballot implements IBallot
      */
     public function setCandidate($candidate)
     {
-        $this->candidate = $candidate;
+        $this->candidate =& $candidate;
     }
 
 }

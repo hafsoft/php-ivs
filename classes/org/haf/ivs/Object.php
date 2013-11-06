@@ -108,11 +108,11 @@ abstract class Object implements IObject
      */
     public function toArray()
     {
-        $result                = array('__class__' => str_replace('\\', '.', get_class($this)));
-        $result['__construct'] = $this->getConstructParams();
-        $result['__prop']      = $this->getProperties();
-
-        return $result;
+        return array(
+            '__obj__' => str_replace('\\', '.', get_class($this)),
+            '__construct' => $this->getConstructParams(),
+            '__prop' => $this->getProperties(),
+        );
     }
 
     /**
@@ -122,13 +122,18 @@ abstract class Object implements IObject
     public static function fromArray($array)
     {
         /** @var Object $object */
-        $object = self::newInstance(str_replace('.', '\\', $array['__class__']), $array['__construct']);
+        $object = self::newInstance(str_replace('.', '\\', $array['__obj__']), $array['__construct']);
         if ($array['__prop'])
             $object->setProperties($array['__prop']);
         return $object;
     }
 
-    protected static function newInstance($name, $args)
+    /**
+     * @param string $name
+     * @param mixed[] $args
+     * @return Object
+     */
+    private static function newInstance($name, $args)
     {
         if ($args == null) {
             return new $name();

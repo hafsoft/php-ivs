@@ -13,5 +13,4 @@ use org\haf\ivs\IvsException;
 
 class CandidateException extends IvsException
 {
-    const NOT_FOUND = 'candidate:notFound';
 }
