@@ -1,10 +1,26 @@
 <?php
 /**
- * ivs
- * copyright (c) 2013 abie
+ * HafSoft Integrated Voting System
+ * Copyright (c) 2013 Abi Hafshin Alfarouq
+ * < abi [dot] hafshin [at] ui [dot] ac [dot] id >
  *
- * @author abie
- * @date 11/2/13 12:50 PM
+ * php-ivs is php wrapper for HafSoft Integrated Voting System.
+ * more info: http://github.com/hafsoft/php-ivs
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  */
 
 namespace org\haf\ivs;
@@ -42,6 +58,7 @@ class IvsClient extends Ivs
      */
     public function getServerAddress()
     {
+
         return $this->serverAddress;
     }
 
@@ -53,6 +70,10 @@ class IvsClient extends Ivs
         $this->serverAddress = $serverAddress;
     }
 
+    /**
+     * @param string $name
+     * @return IManager|ManagerClient
+     */
     protected function createManager($name)
     {
         $manager = parent::createManager($name);
@@ -60,6 +81,65 @@ class IvsClient extends Ivs
             $manager = new ManagerClient($this, array('name' => $name));
         }
         return $manager;
+    }
+
+
+    /**
+     * @return CurlHttpRequest
+     */
+    protected function getConnectionToServer() {
+        $http = new CurlHttpRequest();
+
+        $xdebug_str     = (isset($_GET['XDEBUG_SESSION_START']) || isset($_COOKIE['XDEBUG_SESSION'])) ? '' : '&XDEBUG_SESSION_START=123';
+        $http->open('POST', $this->getServerAddress() . '?r=' . time() . $xdebug_str);
+        $http->addHeader('Connection', 'close');
+        return $http;
+    }
+
+    /**
+     * @param string $managerName
+     * @param string $methodName
+     * @param mixed[] $arguments
+     * @param bool $throwError
+     * @return mixed
+     * @throws IvsException
+     */
+    public function callRemoteMethod($managerName, $methodName, $arguments, $throwError = true) {
+        $request = new IvsServiceRequest();
+        $request->setManagerName($managerName);
+        $request->setMethodName($methodName);
+        $request->setArguments($arguments);
+        $request->setSessionId($this->getSessionId());
+        $request->setVersion($this->getVersion());
+
+        ENABLE_LOG && self::log('calling %s->%s()', $managerName, $methodName);
+        $http    = $this->getConnectionToServer();
+        $respondString = $http->send(Json::serializeToJson($request->toArray()));
+
+        ENABLE_LOG && self::log('receive %s', $respondString);
+        $respond = IvsServiceRespond::fromArray(Json::unSerializeFromJson($respondString));
+        if (! $respond->isValid()) {
+            throw new IvsException(IvsException::INVALID_RESPOND, "invalid respond\n$respondString");
+        }
+        if ($throwError && $respond->getError()){
+            throw $respond->getError();
+        }
+
+        return $respond->getResult();
+    }
+
+    /**
+     * get current session id
+     *
+     * @return null|string
+     */
+    protected function  getSessionId() {
+        if ($voter = $this->getCurrentVoter()) {
+            return $voter->getSessionId();
+        }
+        else {
+            return null;
+        }
     }
 
     /**
@@ -102,52 +182,22 @@ class ManagerClient implements IManager
     }
 
 
-    public function __call($name, $args)
-    {
-        return $this->sendCommand($name, $args);
-    }
-
     /**
-     * @param string $action
-     * @param mixed $arguments
-     * @throws IvsException
+     * @param $name
+     * @param $args
      * @return mixed
      */
-    private function sendCommand($action, $arguments = null)
+    public function __call($name, $args)
     {
-        $http = new CurlHttpRequest();
-
-        $xdebug_session = (isset($_GET['XDEBUG_SESSION_START']) || isset($_COOKIE['XDEBUG_SSESSION'])) ? null : 123;
-        //$xdebug_session = 123;
-        $xdebug_str     = $xdebug_session ? '&XDEBUG_SESSION_START=' . $xdebug_session : '';
-
-        $http->open('POST', $this->parent->getServerAddress() . '?r=' . time() . rand(0, 99999) . $xdebug_str);
-        $http->addHeader('Connection', 'close');
-
-        $currentVoter  = $this->parent->getCurrentVoter();
-        $sessionId     = $currentVoter ? $currentVoter->getSessionId() : NULL;
-        $request       = new IvsServiceRequest($this->name, $action, $arguments, $sessionId);
-
-        ENABLE_LOG && Ivs::log('calling %s->%s()', $this->name, $action);
-        $respondString = $http->send(Json::serializeToJson($request->toArray()));
-        ENABLE_LOG && Ivs::log('receive %s', $respondString);
-
-        $respond = IvsServiceRespond::fromArray(Json::unSerializeFromJson($respondString));
-        if (! $respond->isValid()) {
-            throw new IvsException(IvsException::INVALID_RESPOND, "invalid respond\n$respondString");
-        }
-        if ($respond->getError()){
-            throw $respond->getError();
-        }
-        return $respond->getResult();
+        return $this->parent->callRemoteMethod($this->name, $name, $args);
     }
 
     /**
      * @param string $methodName
      * @return bool
      */
-    public function isMethodAllowed($methodName)
+    public function isRemoteAllowed($methodName)
     {
-        // nothing to do here
+        return false;
     }
 }

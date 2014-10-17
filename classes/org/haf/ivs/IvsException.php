@@ -1,10 +1,26 @@
 <?php
 /**
- * ivs
- * copyright (c) 2013 abie
+ * HafSoft Integrated Voting System
+ * Copyright (c) 2013 Abi Hafshin Alfarouq
+ * < abi [dot] hafshin [at] ui [dot] ac [dot] id >
  *
- * @author abie
- * @date 11/1/13 1:16 PM
+ * php-ivs is php wrapper for HafSoft Integrated Voting System.
+ * more info: http://github.com/hafsoft/php-ivs
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  */
 
 namespace org\haf\ivs;
@@ -16,7 +32,6 @@ namespace org\haf\ivs;
  */
 class IvsException extends \Exception implements IObject
 {
-    const ERROR_UNKNOWN        = 'ivs:unknown';
     const NOT_FOUND            = 'ivs:notFound';
     const INVALID_REQUEST      = 'ivs:invalidRequest';
     const INVALID_RESPOND      = 'ivs:invalidRespond';
@@ -25,16 +40,24 @@ class IvsException extends \Exception implements IObject
     const MANAGER_NOT_DEFINED  = 'ivs:managerNotDefined';
     const PROPERTY_NOT_FOUND   = 'ivs:propertyNotFound';
     const UNKNOWN_CLASS        = 'ivs:unknownClass';
-    const NOT_INITIALIZED      = 'ivs:notInitialized';
 
+    const ERROR_UNKNOWN        = 'ivs:unknown';
+    const NOT_INITIALIZED      = 'ivs:notInitialized';
+    const CONNECTION_FAIL      = 'ivs:connFail';
+
+    /** @var string  */
     private $errorCode;
+
+    /** @var null|string  */
     private $errorDetails;
+
+    /** @var  string */
     private $errorTrace;
 
     /**
      * @param string $errorCode
      * @param null|string $errorDetails
-     * @param null $args
+     * @param mixed $args
      */
     public function __construct($errorCode = self::ERROR_UNKNOWN, $errorDetails = null, $args = null)
     {
@@ -49,6 +72,33 @@ class IvsException extends \Exception implements IObject
 
         ENABLE_LOG && Ivs::log('%s: %s', get_class($this), $this->message);
         DEBUG && Ivs::log("start trace >>\n%s\n<<<", $this->getTraceAsString());
+
+        if (Ivs::app()->isRemoteCall()) {
+            $duration = $this->getSleepDuration($errorCode);
+            $duration > 0 && sleep($duration);  // fuck that!!
+        }
+    }
+
+    /**
+     * @param string $code error code
+     * @return int sleep duration in seconds
+     */
+    protected function getSleepDuration($code) {
+        switch ($code) {
+            case self::ACCESS_DENIED:
+                return 10;
+
+            case self::NOT_FOUND:
+                return 2;
+
+            case self::ERROR_UNKNOWN:
+            case self::CONNECTION_FAIL:
+                // internal server error, don't let client wait
+                return 0;
+
+            default:
+                return 5;
+        }
     }
 
     /**
@@ -93,15 +143,6 @@ class IvsException extends \Exception implements IObject
         return $this->message;
     }
 
-    private function setAdditionalInfo($info)
-    {
-        $this->file = $info['file'];
-        $this->line = $info['line'];
-        $this->errorTrace = $info['trace'];
-        Ivs::log("error trace from server >>\n%s\n<<", $info['trace']);
-        //$this->message .= "\n\n" . $info['trace'];
-    }
-
     /**
      * @param mixed $array
      * @throws \Exception
@@ -112,8 +153,11 @@ class IvsException extends \Exception implements IObject
         /** @var IvsException $err */
         $className = $array['__obj__'];
         $err = new $className($array['__code'], $array['__detail']);
-        if (DEBUG && $array['__debug']) {
-            $err->setAdditionalInfo($array['__debug']);
+        if (DEBUG && $info = $array['__debug']) {
+            $err->file = $info['file'];
+            $err->line = $info['line'];
+            $err->errorTrace = $info['trace'];
+            Ivs::log("error trace from server >>\n%s\n<<", $info['trace']);
         }
 
         return $err;

@@ -1,19 +1,40 @@
 <?php
+/**
+ * HafSoft Integrated Voting System
+ * Copyright (c) 2013 Abi Hafshin Alfarouq
+ * < abi [dot] hafshin [at] ui [dot] ac [dot] id >
+ *
+ * php-ivs is php wrapper for HafSoft Integrated Voting System.
+ * more info: http://github.com/hafsoft/php-ivs
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
 
 namespace org\haf\ivs;
 use org\haf\ivs\tool\Json;
 
-
 /**
- * ivs
- * copyright (c) 2013 abie
+ * Class IvsServiceRespond
  *
- * @author abie
- * @date 11/2/13 12:01 PM
- * @property number $id
+ * @package org\haf\ivs
  */
 class IvsServiceRespond implements IObject
 {
+    /** @var  string */
+    private $version;
 
     private $id;
 
@@ -21,21 +42,31 @@ class IvsServiceRespond implements IObject
 
     private $error;
 
-    /**
-     * @param number $id
-     * @param mixed $result
-     * @param IvsException $error
-     */
-    public function __construct($id = null, $result = null, $error = null)
-    {
-        $this->id     = $id;
-        $this->result = $result;
-        $this->error  = $error;
-    }
 
+    /**
+     * @return bool
+     */
     function isValid() {
         return $this->id !== null;
     }
+
+    /**
+     * @param string $version
+     */
+    public function setVersion($version)
+    {
+        $this->version = $version;
+    }
+
+    /**
+     * @return string
+     */
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
+
 
     /**
      * @param \org\haf\ivs\IvsException|null $error
@@ -54,7 +85,7 @@ class IvsServiceRespond implements IObject
     }
 
     /**
-     * @param mixed $id
+     * @param int $id
      */
     public function setId($id)
     {
@@ -89,20 +120,25 @@ class IvsServiceRespond implements IObject
     public function toArray()
     {
         return array(
-            'ivs-rpc' => 1,
+            'ivs-rpc' => $this->version,
             'id'      => $this->id,
             'result'  => $this->result,
             'error'   => $this->error,
         );
     }
 
+    /**
+     * @param mixed $array
+     * @return \org\haf\ivs\IvsServiceRespond
+     */
     public static function fromArray($array)
     {
-        $a = $array;
-        return new IvsServiceRespond(
-            isset($array['id']) ? $array['id'] : null,
-            isset($array['result']) ? $array['result'] : null,
-            isset($array['error']) ? $array['error'] : null
-        );
+        if (!is_array($array) || !isset($array['ivs-rpc'])) $array = array(); // hack
+        $respond = new IvsServiceRespond();
+        isset($array['ivs-rpc']) and $respond->version = $array['ivs-rpc'];
+        isset($array['id']) and $respond->id = $array['id'];
+        isset($array['result']) and $respond->result = $array['result'];
+        isset($array['error']) and $respond->error = $array['error'];
+        return $respond;
     }
 }

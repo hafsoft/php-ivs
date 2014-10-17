@@ -23,28 +23,32 @@
  *
  */
 
-namespace org\haf\ivs\key;
 
-use org\haf\ivs\IObject;
+namespace org\haf\ivs\logger;
+
+use org\haf\ivs\AbstractManager;
 
 /**
- * Class Ikey
+ * Class DummyLogger
  *
- * @package org\haf\ivs\key
+ * @package org\haf\ivs\logger
  */
-interface Ikey extends IObject
-{
-    const KEY_LOCKED = 'keyLocked';
+class DummyLogger extends AbstractManager implements ILoggerManager {
 
     /**
-     * @param string $data  decrypted data
-     * @return string encrypted data
+     * @param string $str
      */
-    public function encryptData($data);
+    public function log($str)
+    {
+        // nothing to do here
+    }
 
     /**
-     * @param string $data encrypted data
-     * @return string decrypted data
+     * @param string $str
+     * @param mixed[] $args
      */
-    public function decryptData($data);
+    public function logArgs($str, $args)
+    {
+        // nothing to do here
+    }
 }

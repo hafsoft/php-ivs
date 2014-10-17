@@ -1,9 +1,11 @@
 <?php
 /**
- * Integrated Voting System
- * Copyright (C) 2013 Abi Hafshin Alfarouq < abi [dot] hafshin [at] ui [dot] ac [dot] id >
+ * HafSoft Integrated Voting System
+ * Copyright (c) 2013 Abi Hafshin Alfarouq
+ * < abi [dot] hafshin [at] ui [dot] ac [dot] id >
  *
- * php-ivs is php wrapper for Hafsoft Integrated Voting System ...
+ * php-ivs is php wrapper for HafSoft Integrated Voting System.
+ * more info: http://github.com/hafsoft/php-ivs
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,10 +25,8 @@
 
 namespace org\haf\ivs;
 
+use Exception;
 use org\haf\ivs\ballot\IBallotManager;
-use org\haf\ivs\cache\ApcCacheManager;
-use org\haf\ivs\cache\DummyCacheManager;
-use org\haf\ivs\cache\FileCacheManager;
 use org\haf\ivs\cache\ICacheManager;
 use org\haf\ivs\election\IElectionManager;
 use org\haf\ivs\key\IKeyManager;
@@ -45,6 +45,8 @@ use org\haf\ivs\voter\IVoterManager;
  */
 abstract class Ivs
 {
+    const VERSION = '1.0';
+
     /** @var Ivs|null */
     private static $instance = null;
 
@@ -58,29 +60,24 @@ abstract class Ivs
     protected $remoteCall = false;
 
     /**
-     * @var FileLogger
+     * @var array
      */
-    private $logger;
-
     private static $defaultConfig = array(
         'manager' => array(
-            'ICacheManager' => 'org\haf\ivs\cache\DummyCacheManager',
-            'ILoggerManager' => array(
-                'class' => 'org\haf\ivs\logger\FileLogger',
-                'file' => '/var/log/ivs.log',
-            ),
+            'cache' => 'org\haf\ivs\cache\DummyCacheManager',
+            'logger' => 'org\haf\ivs\logger\DummyLogger',
         ),
     );
 
     /**
-     * @throws IvsException
+     * @throws Exception
      * @return Ivs
      */
     public static function &app() {
         if (self::$instance !== null) {
             return self::$instance;
         }
-        throw new IvsException(IvsException::NOT_INITIALIZED, 'IVS has not been initialized');
+        throw new \Exception('IVS has not been initialized');
     }
 
     /**
@@ -102,8 +99,20 @@ abstract class Ivs
         ENABLE_LOG && self::log("Initialized");
     }
 
+    /**
+     *
+     */
     function __destruct() {
-        ENABLE_LOG && self::log('Closed');
+        ENABLE_LOG && self::log("Closed\n\n");
+    }
+
+    /**
+     * get current version
+     *
+     * @return string
+     */
+    public function getVersion() {
+        return self::VERSION;
     }
 
     /**
@@ -111,7 +120,11 @@ abstract class Ivs
      */
     abstract public function getCurrentVoter();
 
-
+    /**
+     * @param $name
+     * @param null $default
+     * @return mixed
+     */
     public function getConfig($name, $default = null) {
         if (isset($this->config[$name])) {
             return $this->config[$name];
@@ -147,13 +160,18 @@ abstract class Ivs
         if (isset($this->config['manager'][$name])) {
             $args = $this->config['manager'][$name];
             if (is_array($args)) {
+                if (!isset($args['class'])) {
+                    return FALSE;
+                }
                 $className = $args['class'];
             } else {
                 $className = $args;
                 $args      = null;
             }
-            $manager = new $className($this, $args);
-            return $manager;
+
+            if (is_subclass_of($className, 'org\haf\ivs\IManager')) {
+                return new $className($this, $args);
+            }
         }
         return NULL;
     }
@@ -166,7 +184,7 @@ abstract class Ivs
      */
     public function &getCacheManager()
     {
-        return $this->getManager('ICacheManager');
+        return $this->getManager('cache');
     }
 
 
@@ -175,9 +193,9 @@ abstract class Ivs
      *
      * @return IElectionManager
      */
-    public function getElectionManager()
+    public function &getElectionManager()
     {
-        return $this->getManager('IElectionManager');
+        return $this->getManager('election');
     }
 
     /**
@@ -185,9 +203,9 @@ abstract class Ivs
      *
      * @return IVoterManager
      */
-    public function getVoterManager()
+    public function &getVoterManager()
     {
-        return $this->getManager('IVoterManager');
+        return $this->getManager('voter');
     }
 
     /**
@@ -197,7 +215,7 @@ abstract class Ivs
      */
     public function getBallotManager()
     {
-        return $this->getManager('IBallotManager');
+        return $this->getManager('ballot');
     }
 
     /**
@@ -207,7 +225,7 @@ abstract class Ivs
      */
     public function getVoteBothManager()
     {
-        return $this->getManager('IVoteBoothManager');
+        return $this->getManager('voteBooth');
     }
 
     /**
@@ -217,14 +235,14 @@ abstract class Ivs
      */
     public function getKeyManager()
     {
-        return $this->getManager('IKeyManager');
+        return $this->getManager('key');
     }
 
     /**
      * @return ILoggerManager
      */
     protected function getLoggerManager() {
-        return $this->getManager('ILoggerManager');
+        return $this->getManager('logger');
     }
 
     /**

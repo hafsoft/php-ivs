@@ -1,14 +1,29 @@
 <?php
 /**
- * ivs
- * copyright (c) 2013 abie
+ * HafSoft Integrated Voting System
+ * Copyright (c) 2013 Abi Hafshin Alfarouq
+ * < abi [dot] hafshin [at] ui [dot] ac [dot] id >
  *
- * @author abie
- * @date 11/2/13 2:07 PM
+ * php-ivs is php wrapper for HafSoft Integrated Voting System.
+ * more info: http://github.com/hafsoft/php-ivs
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  */
 
 namespace org\haf\ivs\election;
-
 
 use org\haf\ivs\candidate\CandidateException;
 use org\haf\ivs\candidate\ICandidate;
@@ -17,20 +32,31 @@ use org\haf\ivs\key\IPrivateKey;
 use org\haf\ivs\key\IPublicKey;
 use org\haf\ivs\Object;
 
+/**
+ * Class Election
+ *
+ * @package org\haf\ivs\election
+ */
 class Election extends Object implements IElection
 {
 
     /** @var string $id */
-    protected $id;
+    protected $id = null;
 
     /** @var string */
-    protected $name;
+    protected $name = null;
 
     /** @var  mixed */
-    protected $info;
+    protected $info = array();
 
     /** @var  ICandidate[] */
-    protected $candidates = null;
+    protected $candidates = array();
+
+    /** @var int */
+    protected $startTime = 0;
+
+    /** @var int */
+    protected $stopTime = 0;
 
     /** @var  IPrivateKey */
     protected $privateKey = null;
@@ -140,6 +166,39 @@ class Election extends Object implements IElection
         return $this->publicKey;
     }
 
+    /**
+     * @param int $startTime
+     */
+    public function setStartTime($startTime)
+    {
+        $this->startTime = $startTime;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStartTime()
+    {
+        return $this->startTime;
+    }
+
+    /**
+     * @param int $stopTime
+     */
+    public function setStopTime($stopTime)
+    {
+        $this->stopTime = $stopTime;
+    }
+
+    /**
+     * @return int
+     */
+    public function getStopTime()
+    {
+        return $this->stopTime;
+    }
+
+
 
     /**
      * @param string $id
@@ -166,4 +225,6 @@ class Election extends Object implements IElection
         }
         return $props;
     }
+
+
 }

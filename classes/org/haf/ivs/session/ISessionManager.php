@@ -23,28 +23,34 @@
  *
  */
 
-namespace org\haf\ivs\key;
+namespace org\haf\ivs\session;
 
-use org\haf\ivs\IObject;
+
+use org\haf\ivs\IManager;
 
 /**
- * Class Ikey
+ * Class ISessionManager
  *
- * @package org\haf\ivs\key
+ * @package org\haf\ivs\session
  */
-interface Ikey extends IObject
-{
-    const KEY_LOCKED = 'keyLocked';
+interface ISessionManager extends IManager {
 
     /**
-     * @param string $data  decrypted data
-     * @return string encrypted data
+     * @param $initialData
+     * @param int $ttl
+     * @return Session
      */
-    public function encryptData($data);
+    public function createSession($initialData, $ttl = 0);
 
     /**
-     * @param string $data encrypted data
-     * @return string decrypted data
+     * @param $sessionId
+     * @return Session
      */
-    public function decryptData($data);
+    public function getById($sessionId);
+
+    /**
+     * @param Session $session
+     * @return mixed
+     */
+    public function remove($session);
 }

@@ -1,29 +1,54 @@
 <?php
 /**
- * ivs
- * copyright (c) 2013 abie
+ * HafSoft Integrated Voting System
+ * Copyright (c) 2013 Abi Hafshin Alfarouq
+ * < abi [dot] hafshin [at] ui [dot] ac [dot] id >
  *
- * @author abie
- * @date 11/2/13 12:56 PM
+ * php-ivs is php wrapper for HafSoft Integrated Voting System.
+ * more info: http://github.com/hafsoft/php-ivs
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  */
 
 namespace org\haf\ivs\tool;
+use org\haf\ivs\IvsException;
 
-
-class CurlHttpRequest implements IHttpRequest
+/**
+ * Class CurlHttpRequest
+ *
+ * @package org\haf\ivs\tool
+ */
+class CurlHttpRequest
 {
     /** @var null|resource */
     private $handler = null;
 
+    /** @var string[] */
     private $headers = array();
 
+    /**
+     * initialize curl
+     */
     public function __construct()
     {
         $this->handler = curl_init();
     }
 
     /**
-     * @param string $method
+     * @param string $method GET or POST
      * @param string $url
      * @return bool
      */
@@ -35,7 +60,7 @@ class CurlHttpRequest implements IHttpRequest
             CURLOPT_FRESH_CONNECT  => 1,
             CURLOPT_RETURNTRANSFER => 1,
             CURLOPT_FORBID_REUSE   => 1,
-            CURLOPT_TIMEOUT        => 120,
+            CURLOPT_TIMEOUT        => 60,
         );
 
         switch (strtolower($method)) {
@@ -44,7 +69,46 @@ class CurlHttpRequest implements IHttpRequest
                 break;
 
         }
+        return $this->setOptions($options);
+    }
+
+    /**
+     * @param int $option CURLOPT_*
+     * @param mixed $value
+     * @return bool
+     */
+    public function setOption($option, $value) {
+        return curl_setopt($this->handler, $option, $value);
+    }
+
+    /**
+     * @param array $options
+     * @return bool
+     */
+    public function setOptions($options) {
         return curl_setopt_array($this->handler, $options);
+    }
+
+    /**
+     * @param string $caPath
+     * @return bool
+     */
+    public function setCAPath($caPath) {
+        return $this->setOptions(array(
+            CURLOPT_CAPATH => $caPath,
+            CURLOPT_SSL_VERIFYPEER => TRUE,
+        ));
+    }
+
+    /**
+     * @param string $caInfo
+     * @return bool
+     */
+    public function setCAInfo($caInfo) {
+        return $this->setOptions(array(
+            CURLOPT_CAINFO => $caInfo,
+            CURLOPT_SSL_VERIFYPEER => TRUE,
+        ));
     }
 
     /**
@@ -74,7 +138,7 @@ class CurlHttpRequest implements IHttpRequest
         } else {
             $error = curl_error($this->handler);
             $errNo = curl_errno($this->handler);
-            throw new \Exception($error, $errNo);
+            throw new IvsException(IvsException::CONNECTION_FAIL, '%s: %s', $error, $errNo);
         }
     }
 

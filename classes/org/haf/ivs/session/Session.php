@@ -23,28 +23,18 @@
  *
  */
 
-namespace org\haf\ivs\key;
+namespace org\haf\ivs\session;
 
-use org\haf\ivs\IObject;
 
-/**
- * Class Ikey
- *
- * @package org\haf\ivs\key
- */
-interface Ikey extends IObject
-{
-    const KEY_LOCKED = 'keyLocked';
+use org\haf\ivs\Object;
 
-    /**
-     * @param string $data  decrypted data
-     * @return string encrypted data
-     */
-    public function encryptData($data);
+class Session extends Object {
 
-    /**
-     * @param string $data encrypted data
-     * @return string decrypted data
-     */
-    public function decryptData($data);
+    private $sessionId;
+
+    private $data;
+
+    public function get($name) {
+        return $this->data[$name];
+    }
 }

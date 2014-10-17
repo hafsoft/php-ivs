@@ -1,14 +1,29 @@
 <?php
 /**
- * php-ivs
- * copyright (c) 2013 abie
+ * HafSoft Integrated Voting System
+ * Copyright (c) 2013 Abi Hafshin Alfarouq
+ * < abi [dot] hafshin [at] ui [dot] ac [dot] id >
  *
- * @author abie
- * @date 11/5/13 11:40 AM
+ * php-ivs is php wrapper for HafSoft Integrated Voting System.
+ * more info: http://github.com/hafsoft/php-ivs
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
  */
 
 namespace org\haf\ivs;
-
 
 use org\haf\ivs\ballot\BallotException;
 use org\haf\ivs\ballot\IBallot;
@@ -16,42 +31,61 @@ use org\haf\ivs\ballot\IBallotFactory;
 use org\haf\ivs\ballot\IBallotIterator;
 use org\haf\ivs\ballot\IPackedBallot;
 
-class TallyResult {
 
-    /** @var number[] */
-    private $countByCandidate = array();
+/**
+ * Class TallyResult
+ *
+ * @package org\haf\ivs
+ */
+class TallyResult
+{
+    /** @var  IBallotFactory */
+    private $ballotFactory;
 
-    /** @var number[] */
-    private $countBySigner = array();
+    /** @var  IBallotIterator */
+    private $ballotIterator;
 
-    /** @var number[][] */
-    private $matrix = array();
+    /** @var int[] */
+    protected  $countByCandidate = array();
 
-    private $invalidNum = 0;
+    /** @var int[] */
+    protected $countBySigner = array();
 
-    private $errors = array();
+    /** @var int[][] */
+    protected $matrix = array();
+
+    /** @var int  */
+    protected $invalidNum = 0;
+
+    /** @var IvsException[] */
+    protected $errors = array();
 
     /**
      * @param IBallotFactory $ballotFactory
      * @param IBallotIterator|IPackedBallot[] $ballotIterator
      */
     public function __construct($ballotFactory, $ballotIterator) {
-        foreach($ballotIterator as $packedBallot) {
+        $this->ballotFactory = $ballotFactory;
+        $this->ballotIterator = $ballotIterator;
+    }
+
+    public function start() {
+        foreach($this->ballotIterator as $packedBallot) {
             $error = null;
             try {
-                $ballot = $ballotFactory->unpackBallot($packedBallot);
+                $ballot = $this->ballotFactory->unpackBallot($packedBallot);
                 if (! $ballot->isVerified()) {
                     throw new BallotException(BallotException::NOT_VERIFIED);
                 }
-            } catch (BallotException $e) {
+            } catch (IvsException $e) {
                 $error = $e;
                 $ballot = null;
             }
 
-            if ($ballot && $ballot->isVerified()) {
+            if ($ballot) {
                 $this->processBallot($ballot);
             } else {
-                $this->invalidNum++;
+                $this->processError($error);
             }
         }
     }
@@ -82,6 +116,32 @@ class TallyResult {
     }
 
     /**
+     * @param IvsException $error
+     */
+    protected function  processError($error) {
+        $this->invalidNum++;
+        $this->errors[] = $error;
+    }
+
+    /**
+     * @param null $candidateId
+     * @param null $signerId
+     * @return int|int[][]
+     */
+    public function getNum($candidateId = null, $signerId = null) {
+        if ($candidateId == null && $signerId == null) {
+            return $this->matrix;
+        }
+        elseif ($signerId == null ) {
+            return $this->countByCandidate[$candidateId];
+        }
+        else {
+            return $this->countBySigner[$signerId];
+        }
+
+    }
+
+    /**
      * @param $candidateId
      * @return number
      */
@@ -97,16 +157,12 @@ class TallyResult {
         return $this->countBySigner[$signerId];
     }
 
-    /**
-     * @param $candidateId
-     * @param $signerId
-     * @return number
-     */
-    public function getNum($candidateId, $signerId) {
-        return $this->matrix[$candidateId][$signerId];
-    }
 
     public function getInvalidBallotNum() {
         return $this->invalidNum;
+    }
+
+    public function getErrors() {
+        return $this->errors;
     }
 }
